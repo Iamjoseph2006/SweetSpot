@@ -1,50 +1,34 @@
-# Welcome to your Expo app 👋
+# Sweet Spot - App Móvil
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Proyecto académico que implementa registro, inicio de sesión y control de acceso usando una API REST y una aplicación móvil en Expo.
 
-## Get started
+## Tecnologías
+- Backend: Node.js, Express, MySQL
+- Frontend: Expo (React Native)
+- Autenticación: JWT
 
-1. Install dependencies
-
-   ```bash
+## Instalación Backend
+1. Clonar el repositorio
+2. Instalar dependencias:
    npm install
-   ```
+3. Crear archivo .env con las variables:
+   PORT=3000
+   DB_HOST=localhost
+   DB_USER=root
+   DB_PASSWORD=
+   DB_NAME=sweetspot_db
+   JWT_SECRET=mi_secreto
+4. Ejecutar:
+   npm start
 
-2. Start the app
-
-   ```bash
+## Instalación App Móvil
+1. Instalar Expo Go en el celular
+2. Ejecutar:
    npx expo start
-   ```
+3. Escanear el QR desde Expo Go
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Funcionalidades
+- Registro de usuarios
+- Inicio de sesión
+- Vista protegida (Dashboard)
+- Cierre de sesión
