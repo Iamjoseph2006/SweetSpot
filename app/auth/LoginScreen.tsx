@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -7,10 +7,11 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 import { z } from 'zod';
 import { loginUser } from '../../services/api';
+import { getToken, saveToken } from '../../services/authStorage';
 
 /* ============================
    ESQUEMA DE VALIDACIÓN (ZOD)
@@ -34,6 +35,17 @@ export default function LoginScreen() {
     general?: string;
   }>({});
 
+  useEffect(() => {
+    const redirectIfLoggedIn = async () => {
+      const token = await getToken();
+      if (token) {
+        router.replace('/DashboardScreen');
+      }
+    };
+
+    redirectIfLoggedIn();
+  }, [router]);
+
   /* FUNCIÓN LOGIN */
   const login = async () => {
     setErrors({}); // limpiar errores previos
@@ -45,7 +57,7 @@ export default function LoginScreen() {
     });
 
     if (!validation.success) {
-      const fieldErrors: any = {};
+      const fieldErrors: Record<string, string> = {};
 
       validation.error.issues.forEach((issue) => {
         const field = issue.path[0] as string;
@@ -60,16 +72,16 @@ export default function LoginScreen() {
       const response = await loginUser({ email, password });
 
       if (response.token) {
+        await saveToken(response.token);
         router.replace('/DashboardScreen');
       } else {
         setErrors({
           general: response.error || 'Correo o contraseña incorrectos',
         });
       }
-    } catch (error) {
+    } catch {
       setErrors({
-        general:
-          'No se pudo conectar al servidor. Verifica tu conexión o la IP.',
+        general: 'No se pudo conectar al servidor. Verifica tu conexión o la IP.',
       });
     }
   };
@@ -85,40 +97,26 @@ export default function LoginScreen() {
         {/* EMAIL */}
         <TextInput
           placeholder="Correo electrónico"
-          style={[
-            styles.input,
-            errors.email && styles.inputError,
-          ]}
+          style={[styles.input, errors.email && styles.inputError]}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        {errors.email && (
-          <Text style={styles.errorText}>⚠️ {errors.email}</Text>
-        )}
+        {errors.email && <Text style={styles.errorText}>⚠️ {errors.email}</Text>}
 
         {/* PASSWORD */}
         <TextInput
           placeholder="Contraseña"
           secureTextEntry
-          style={[
-            styles.input,
-            errors.password && styles.inputError,
-          ]}
+          style={[styles.input, errors.password && styles.inputError]}
           value={password}
           onChangeText={setPassword}
         />
-        {errors.password && (
-          <Text style={styles.errorText}>⚠️ {errors.password}</Text>
-        )}
+        {errors.password && <Text style={styles.errorText}>⚠️ {errors.password}</Text>}
 
         {/* ERROR GENERAL */}
-        {errors.general && (
-          <Text style={styles.errorTextCenter}>
-            ⚠ {errors.general}
-          </Text>
-        )}
+        {errors.general && <Text style={styles.errorTextCenter}>⚠ {errors.general}</Text>}
 
         <TouchableOpacity style={styles.btnPrimary} onPress={login}>
           <Text style={styles.btnText}>Entrar</Text>

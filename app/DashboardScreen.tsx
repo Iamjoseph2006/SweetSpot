@@ -1,16 +1,46 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter, Stack } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { getProtectedProfile } from '../services/api';
+import { removeToken } from '../services/authStorage';
 
 export default function DashboardScreen() {
   const router = useRouter();
+  const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const handleLogout = () => {
-    router.push('/auth/LoginScreen');
+  useEffect(() => {
+    const loadProfile = async () => {
+      const data = await getProtectedProfile();
+
+      if (data.error) {
+        await removeToken();
+        router.replace('/auth/LoginScreen');
+        return;
+      }
+
+      setMessage(data.message);
+      setLoading(false);
+    };
+
+    loadProfile();
+  }, [router]);
+
+  const handleLogout = async () => {
+    await removeToken();
+    router.replace('/auth/LoginScreen');
   };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Bienvenido al Dashboard</Text>
+
+      {loading ? (
+        <ActivityIndicator color="#704f46" size="large" />
+      ) : (
+        <Text style={styles.subtitle}>{message}</Text>
+      )}
+
       <TouchableOpacity style={styles.btnLogout} onPress={handleLogout}>
         <Text style={styles.btnText}>Cerrar sesión</Text>
       </TouchableOpacity>
@@ -23,18 +53,23 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff3f9', // Fondo SweetSpot
+    backgroundColor: '#fff3f9',
     padding: 24,
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#704f46', // Color principal
-    marginBottom: 32,
+    color: '#704f46',
+    marginBottom: 16,
     textAlign: 'center',
   },
+  subtitle: {
+    fontSize: 15,
+    color: '#704f46',
+    marginBottom: 24,
+  },
   btnLogout: {
-    backgroundColor: '#38b6ff', // Botón de acento
+    backgroundColor: '#38b6ff',
     paddingVertical: 14,
     paddingHorizontal: 40,
     borderRadius: 12,

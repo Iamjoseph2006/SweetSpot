@@ -18,4 +18,11 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const profile = async (req, res) => {
+  res.json({
+    message: 'Acceso autorizado al endpoint protegido',
+    user: req.user,
+  });
+};
+
+module.exports = { register, login, profile };
