@@ -1,7 +1,6 @@
 module.exports = {
   testRunner: {
     args: {
-      '$0': 'jest',
       config: 'e2e/jest.config.js',
     },
     jest: {
@@ -12,7 +11,8 @@ module.exports = {
     'android.debug': {
       type: 'android.apk',
       binaryPath: 'android/app/build/outputs/apk/debug/app-debug.apk',
-      build: 'cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug',
+      build:
+        'EXPO_PUBLIC_E2E_MODE=true expo run:android --variant debug',
     },
   },
   devices: {

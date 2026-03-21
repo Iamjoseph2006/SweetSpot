@@ -33,21 +33,26 @@ export default function DashboardScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Bienvenido al Dashboard</Text>
+      <Text style={styles.title} testID="dashboard-title">
+        Bienvenido al Dashboard
+      </Text>
 
       {loading ? (
-        <ActivityIndicator color="#704f46" size="large" />
+        <ActivityIndicator color="#704f46" size="large" testID="dashboard-loader" />
       ) : (
-        <Text style={styles.subtitle}>{message}</Text>
+        <Text style={styles.subtitle} testID="dashboard-message">
+          {message}
+        </Text>
       )}
       <TouchableOpacity
         style={styles.btnProfile}
         onPress={() => router.push('/profile/ProfileSettingsScreen')}
+        testID="dashboard-profile-button"
       >
         <Text style={styles.btnText}>Ir a Perfil / Configuración</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.btnLogout} onPress={handleLogout}>
+      <TouchableOpacity style={styles.btnLogout} onPress={handleLogout} testID="dashboard-logout-button">
         <Text style={styles.btnText}>Cerrar sesión</Text>
       </TouchableOpacity>
     </View>

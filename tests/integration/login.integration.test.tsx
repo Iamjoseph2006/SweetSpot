@@ -56,4 +56,18 @@ describe('LoginScreen integration', () => {
       expect(replaceMock).toHaveBeenCalledWith('/DashboardScreen');
     });
   });
+
+  it('muestra error general cuando el servicio rechaza las credenciales', async () => {
+    (loginUser as jest.Mock).mockResolvedValue({ error: 'Credenciales inválidas' });
+
+    const { getByPlaceholderText, getByText, findByText } = render(<LoginScreen />);
+
+    fireEvent.changeText(getByPlaceholderText('Correo electrónico'), 'demo@email.com');
+    fireEvent.changeText(getByPlaceholderText('Contraseña'), '123456');
+    fireEvent.press(getByText('Entrar'));
+
+    expect(await findByText(/credenciales inválidas/i)).toBeTruthy();
+    expect(saveToken).not.toHaveBeenCalled();
+    expect(replaceMock).not.toHaveBeenCalledWith('/DashboardScreen');
+  });
 });
