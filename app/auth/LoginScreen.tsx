@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { z } from 'zod';
 import { loginUser } from '../../services/api';
+import { buildLoginPayload, mapInternalError } from '../../services/authLogic';
 import { getToken, saveToken } from '../../services/authStorage';
 
 /* ============================
@@ -69,7 +70,7 @@ export default function LoginScreen() {
     }
 
     try {
-      const response = await loginUser({ email, password });
+      const response = await loginUser(buildLoginPayload({ email, password }));
 
       if (response.token) {
         await saveToken(response.token);
@@ -79,9 +80,12 @@ export default function LoginScreen() {
           general: response.error || 'Correo o contraseña incorrectos',
         });
       }
-    } catch {
+    } catch (error) {
       setErrors({
-        general: 'No se pudo conectar al servidor. Verifica tu conexión o la IP.',
+        general: mapInternalError(
+          error,
+          'No se pudo conectar al servidor. Verifica tu conexión o la IP.'
+        ),
       });
     }
   };
