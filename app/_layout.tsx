@@ -22,6 +22,7 @@ export default function RootLayout() {
 
         {/* Vista protegida */}
         <Stack.Screen name="DashboardScreen" />
+        <Stack.Screen name="profile/ProfileSettingsScreen" />
       </Stack>
 
       <StatusBar style="auto" />

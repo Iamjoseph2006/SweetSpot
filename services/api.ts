@@ -1,7 +1,7 @@
 import { getToken } from './authStorage';
 
 // URL base de la API (cambia solo aquí si cambia la IP)
-const BASE_URL = 'http://192.168.1.26:3000/api';
+const BASE_URL = 'http://192.168.0.9:3000/api';
 
 /* REGISTRO DE USUARIO */
 export async function registerUser(data: {

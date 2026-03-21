@@ -40,6 +40,12 @@ export default function DashboardScreen() {
       ) : (
         <Text style={styles.subtitle}>{message}</Text>
       )}
+      <TouchableOpacity
+        style={styles.btnProfile}
+        onPress={() => router.push('/profile/ProfileSettingsScreen')}
+      >
+        <Text style={styles.btnText}>Ir a Perfil / Configuración</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.btnLogout} onPress={handleLogout}>
         <Text style={styles.btnText}>Cerrar sesión</Text>
@@ -67,6 +73,15 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#704f46',
     marginBottom: 24,
+    textAlign: 'center',
+  },
+  btnProfile: {
+    backgroundColor: '#8c6a5d',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 12,
   },
   btnLogout: {
     backgroundColor: '#38b6ff',

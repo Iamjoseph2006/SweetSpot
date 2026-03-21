@@ -116,7 +116,7 @@ export default function LoginScreen() {
         {errors.password && <Text style={styles.errorText}>⚠️ {errors.password}</Text>}
 
         {/* ERROR GENERAL */}
-        {errors.general && <Text style={styles.errorTextCenter}>⚠ {errors.general}</Text>}
+        {errors.general && <Text style={styles.errorTextCenter}>⚠️ {errors.general}</Text>}
 
         <TouchableOpacity style={styles.btnPrimary} onPress={login}>
           <Text style={styles.btnText}>Entrar</Text>
