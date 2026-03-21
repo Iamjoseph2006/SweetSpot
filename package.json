@@ -12,7 +12,8 @@
     "test": "jest",
     "test:unit": "jest --selectProjects unit",
     "test:integration": "jest --selectProjects integration",
-    "test:e2e": "detox test --configuration android.emu.debug"
+    "test:e2e": "detox test --configuration android.emu.debug",
+    "test:e2e:build": "detox build --configuration android.emu.debug"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",

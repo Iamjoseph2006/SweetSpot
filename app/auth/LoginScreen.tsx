@@ -14,9 +14,6 @@ import { loginUser } from '../../services/api';
 import { buildLoginPayload, mapInternalError } from '../../services/authLogic';
 import { getToken, saveToken } from '../../services/authStorage';
 
-/* ============================
-   ESQUEMA DE VALIDACIÓN (ZOD)
-   ============================ */
 const loginSchema = z.object({
   email: z.string().email('Ingrese un correo electrónico válido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
@@ -24,12 +21,8 @@ const loginSchema = z.object({
 
 export default function LoginScreen() {
   const router = useRouter();
-
-  // Estados del formulario
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // Estados de error por campo
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -47,11 +40,9 @@ export default function LoginScreen() {
     redirectIfLoggedIn();
   }, [router]);
 
-  /* FUNCIÓN LOGIN */
   const login = async () => {
-    setErrors({}); // limpiar errores previos
+    setErrors({});
 
-    // 🔍 Validación con Zod
     const validation = loginSchema.safeParse({
       email,
       password,
@@ -96,10 +87,12 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Iniciar Sesión</Text>
+        <Text style={styles.title} testID="login-title">
+          Iniciar Sesión
+        </Text>
 
-        {/* EMAIL */}
         <TextInput
+          testID="login-email-input"
           placeholder="Correo electrónico"
           style={[styles.input, errors.email && styles.inputError]}
           value={email}
@@ -109,8 +102,8 @@ export default function LoginScreen() {
         />
         {errors.email && <Text style={styles.errorText}>⚠️ {errors.email}</Text>}
 
-        {/* PASSWORD */}
         <TextInput
+          testID="login-password-input"
           placeholder="Contraseña"
           secureTextEntry
           style={[styles.input, errors.password && styles.inputError]}
@@ -119,16 +112,16 @@ export default function LoginScreen() {
         />
         {errors.password && <Text style={styles.errorText}>⚠️ {errors.password}</Text>}
 
-        {/* ERROR GENERAL */}
         {errors.general && <Text style={styles.errorTextCenter}>⚠️ {errors.general}</Text>}
 
-        <TouchableOpacity style={styles.btnPrimary} onPress={login}>
+        <TouchableOpacity style={styles.btnPrimary} onPress={login} testID="login-submit-button">
           <Text style={styles.btnText}>Entrar</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.btnSecondary}
           onPress={() => router.push('/auth/RegisterScreen')}
+          testID="login-register-button"
         >
           <Text style={styles.btnText}>Registrarse</Text>
         </TouchableOpacity>
@@ -137,7 +130,6 @@ export default function LoginScreen() {
   );
 }
 
-/* ESTILOS */
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
