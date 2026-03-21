@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { z } from 'zod';
 import { checkEmailExists, registerUser } from '../../services/api';
+import { buildRegisterPayload, mapInternalError, normalizeEmail } from '../../services/authLogic';
 
 /* ESQUEMA DE VALIDACIÓN (ZOD) */
 const registerSchema = z
@@ -62,9 +63,10 @@ export default function RegisterScreen() {
     }
 
     emailTimeout.current = setTimeout(async () => {
-      if (value.includes('@')) {
+      const normalizedEmail = normalizeEmail(value);
+      if (normalizedEmail.includes('@')) {
         try {
-          const exists = await checkEmailExists(value);
+          const exists = await checkEmailExists(normalizedEmail);
           if (exists) {
             setErrors((prev) => ({
               ...prev,
@@ -99,12 +101,14 @@ export default function RegisterScreen() {
     }
 
     try {
-      const response = await registerUser({
-        name,
-        email,
-        password,
-        role_id: 2,
-      });
+      const response = await registerUser(
+        buildRegisterPayload({
+          name,
+          email,
+          password,
+          roleId: 2,
+        })
+      );
 
       if (response?.error) {
         Alert.alert('Error', response.error);
@@ -115,10 +119,7 @@ export default function RegisterScreen() {
       router.replace('/auth/LoginScreen');
 
     } catch (error) {
-      Alert.alert(
-        'Error de conexión',
-        'No se pudo conectar con el servidor'
-      );
+      Alert.alert('Error de conexión', mapInternalError(error, 'No se pudo conectar con el servidor'));
     }
   };
 
