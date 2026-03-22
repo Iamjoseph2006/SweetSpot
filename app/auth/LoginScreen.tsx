@@ -43,9 +43,11 @@ export default function LoginScreen() {
   const login = async () => {
     setErrors({});
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
     const validation = loginSchema.safeParse({
-      email,
-      password,
+      email: cleanEmail,
+      password: cleanPassword,
     });
 
     if (!validation.success) {
@@ -61,7 +63,12 @@ export default function LoginScreen() {
     }
 
     try {
-      const response = await loginUser(buildLoginPayload({ email, password }));
+      const cleanEmail = email.trim().toLowerCase();
+      const cleanPassword = password.trim();
+      const response = await loginUser({
+        email: cleanEmail,
+        password: cleanPassword,
+      });
 
       if (response.token) {
         await saveToken(response.token);

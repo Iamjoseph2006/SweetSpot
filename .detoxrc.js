@@ -12,7 +12,7 @@ module.exports = {
       type: 'android.apk',
       binaryPath: 'android/app/build/outputs/apk/debug/app-debug.apk',
       build:
-        'EXPO_PUBLIC_E2E_MODE=true expo run:android --variant debug',
+        'build": "npm run android:e2e',
     },
   },
   devices: {
