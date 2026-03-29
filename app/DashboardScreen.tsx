@@ -47,7 +47,7 @@ export default function DashboardScreen() {
 
       <TouchableOpacity
         style={styles.btnCatalog}
-        onPress={() => router.push('/shop/CatalogScreen')}
+        onPress={() => router.push('../shop/CatalogScreen')}
       >
         <Text style={styles.btnText}>Ir al catálogo</Text>
       </TouchableOpacity>

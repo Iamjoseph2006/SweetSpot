@@ -1,6 +1,6 @@
 import { getToken } from './authStorage';
 
-export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.0.9:3000/api';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.1.26:3000/api';
 
 const E2E_EMAIL = 'demo@email.com';
 const E2E_PASSWORD = '123456';
