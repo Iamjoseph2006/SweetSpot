@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { createProduct } from '../../services/api';
+import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 
 const EMPTY_FORM = {
   name: '',
@@ -85,15 +86,13 @@ export default function AdminProductsScreen() {
         <Text style={styles.buttonText}>Ver productos</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/DashboardScreen')}>
-        <Text style={styles.buttonText}>Regresar al menú</Text>
-      </TouchableOpacity>
+      <AppFooterNav isAdmin />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48 },
+  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48, paddingBottom: FOOTER_SPACE },
   title: {
     fontSize: 21,
     fontWeight: 'bold',
@@ -109,16 +108,9 @@ const styles = StyleSheet.create({
     padding: 10,
     marginBottom: 8,
   },
-  saveButton: { backgroundColor: '#f59e0b', padding: 12, borderRadius: 10, alignItems: 'center' },
+  saveButton: { backgroundColor: '#704f46', padding: 12, borderRadius: 10, alignItems: 'center' },
   manageButton: {
     backgroundColor: '#38b6ff',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  backButton: {
-    backgroundColor: '#8c6a5d',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',

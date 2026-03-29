@@ -11,6 +11,7 @@ import {
   View,
 } from 'react-native';
 import { CartItem, createOrder, deleteCartItem, getCartByUser, getProtectedProfile } from '../../services/api';
+import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 import { readNativeNote, saveNativeNote } from '../../services/native/fileSystemService';
 import { getCurrentLocation, requestLocationPermission } from '../../services/native/locationService';
 
@@ -18,6 +19,7 @@ export default function CartScreen() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [userId, setUserId] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [deliveryLocation, setDeliveryLocation] = useState('Ubicación no registrada');
   const [preference, setPreference] = useState('');
@@ -32,6 +34,7 @@ export default function CartScreen() {
       }
 
       setUserId(data.user.id);
+      setIsAdmin(data.user.role_id === 1);
     } catch {
       setUserId(null);
     }
@@ -203,19 +206,13 @@ export default function CartScreen() {
         <Text style={styles.buttonText}>Confirmar pedido</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/shop/CatalogScreen')}>
-        <Text style={styles.buttonText}>Seguir comprando</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.ordersButton} onPress={() => router.push('/shop/OrdersScreen')}>
-        <Text style={styles.buttonText}>Mis pedidos</Text>
-      </TouchableOpacity>
+      <AppFooterNav isAdmin={isAdmin} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48 },
+  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48, paddingBottom: FOOTER_SPACE },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -259,25 +256,11 @@ const styles = StyleSheet.create({
   total: { fontSize: 18, fontWeight: 'bold', color: '#704f46', marginVertical: 12 },
   deleteButton: { backgroundColor: '#d9534f', padding: 10, borderRadius: 8 },
   confirmButton: { backgroundColor: '#38b6ff', padding: 12, borderRadius: 10, alignItems: 'center' },
-  backButton: {
-    backgroundColor: '#8c6a5d',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
-  },
   secondaryButton: {
-    backgroundColor: '#f59e0b',
+    backgroundColor: '#8c6a5d',
     padding: 11,
     borderRadius: 10,
     alignItems: 'center',
-  },
-  ordersButton: {
-    backgroundColor: '#704f46',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
   },
   buttonText: { color: '#fff', fontWeight: 'bold' },
 });

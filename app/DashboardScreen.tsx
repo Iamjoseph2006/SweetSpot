@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { AppFooterNav, FOOTER_SPACE } from '../components/app-footer-nav';
 import { getProtectedProfile } from '../services/api';
 import { removeToken } from '../services/authStorage';
 
@@ -50,10 +51,11 @@ export default function DashboardScreen() {
   const roleLabel = isAdmin ? 'Administrador' : 'Cliente';
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title} testID="dashboard-title">
-        Bienvenido{displayName !== 'Si' ? `, ${displayName}` : ' a SweetSpot'}
-      </Text>
+    <View style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title} testID="dashboard-title">
+          Bienvenido{displayName !== 'Si' ? `, ${displayName}` : ' a SweetSpot'}
+        </Text>
 
       {!loading && <Text style={styles.headerEmail}>{displayEmail}</Text>}
 
@@ -76,39 +78,6 @@ export default function DashboardScreen() {
             <Text style={styles.subtitle} testID="dashboard-message">
               {message}
             </Text>
-
-            {isAdmin ? (
-              <>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.btnAdmin]}
-                  onPress={() => router.push('/shop/AdminProductsScreen')}
-                >
-                  <Text style={styles.btnText}>Gestionar Productos</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.btnOrders]}
-                  onPress={() => router.push('/shop/OrdersScreen')}
-                >
-                  <Text style={styles.btnText}>Gestionar Pedidos</Text>
-                </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.btnCatalog]}
-                  onPress={() => router.push('../shop/CatalogScreen')}
-                >
-                  <Text style={styles.btnText}>Ir al Catálogo</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.actionButton, styles.btnOrders]}
-                  onPress={() => router.push('/shop/OrdersScreen')}
-                >
-                  <Text style={styles.btnText}>Ver mis pedidos</Text>
-                </TouchableOpacity>
-              </>
-            )}
-
           </View>
         </>
       )}
@@ -116,16 +85,22 @@ export default function DashboardScreen() {
       <TouchableOpacity style={styles.btnLogout} onPress={handleLogout} testID="dashboard-logout-button">
         <Text style={styles.btnText}>Cerrar Sesión</Text>
       </TouchableOpacity>
-    </ScrollView>
+      </ScrollView>
+      {!loading && <AppFooterNav isAdmin={isAdmin} />}
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#fff3f9',
+  },
   container: {
     flexGrow: 1,
     justifyContent: 'center',
-    backgroundColor: '#fff3f9',
     padding: 24,
+    paddingBottom: FOOTER_SPACE + 24,
   },
   title: {
     fontSize: 30,
@@ -176,22 +151,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#704f46',
     marginBottom: 12,
-  },
-  btnCatalog: {
-    backgroundColor: '#f59e0b',
-  },
-  btnAdmin: {
-    backgroundColor: '#704f46',
-  },
-  btnOrders: {
-    backgroundColor: '#38b6ff',
-  },
-  actionButton: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 4,
   },
   btnLogout: {
     backgroundColor: '#38b6ff',

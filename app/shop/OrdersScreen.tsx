@@ -3,6 +3,7 @@ import { removeToken } from '../../services/authStorage';
 import { useCallback, useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getOrders, getProtectedProfile, Order, updateOrderStatus } from '../../services/api';
+import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 
 const ADMIN_STATUSES = ['created', 'preparing', 'sent', 'delivered'];
 
@@ -99,15 +100,13 @@ export default function OrdersScreen() {
         />
       )}
 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/DashboardScreen')}>
-        <Text style={styles.buttonText}>Regresar al menú</Text>
-      </TouchableOpacity>
+      <AppFooterNav isAdmin={isAdmin} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48 },
+  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48, paddingBottom: FOOTER_SPACE },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -131,13 +130,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 8,
-  },
-  backButton: {
-    backgroundColor: '#8c6a5d',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 10,
   },
   buttonText: { color: '#fff', fontWeight: 'bold' },
 });

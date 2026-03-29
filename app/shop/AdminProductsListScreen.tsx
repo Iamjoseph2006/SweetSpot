@@ -1,13 +1,13 @@
 import { Image } from 'expo-image';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { activateProduct, deleteProduct, getProducts, inactivateProduct, Product, updateProduct } from '../../services/api';
+import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 
 const EMPTY_FORM = { name: '', description: '', price: '', image: '' };
 
 export default function AdminProductsListScreen() {
-  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -116,13 +116,13 @@ export default function AdminProductsListScreen() {
         )}
       />
 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/shop/AdminProductsScreen')}><Text style={styles.buttonText}>Volver a crear</Text></TouchableOpacity>
+      <AppFooterNav isAdmin />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48 },
+  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48, paddingBottom: FOOTER_SPACE },
   title: { fontSize: 21, fontWeight: 'bold', color: '#704f46', marginBottom: 12, textAlign: 'center' },
   list: { paddingBottom: 12 },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 10 },
@@ -134,11 +134,10 @@ const styles = StyleSheet.create({
   name: { fontSize: 17, fontWeight: '600', color: '#704f46' },
   details: { color: '#704f46', marginBottom: 6 },
   row: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  saveButton: { backgroundColor: '#f59e0b', padding: 10, borderRadius: 8, alignItems: 'center' },
+  saveButton: { backgroundColor: '#704f46', padding: 10, borderRadius: 8, alignItems: 'center' },
   cancelButton: { backgroundColor: '#8c6a5d', padding: 10, borderRadius: 8, alignItems: 'center', marginTop: 8 },
   editButton: { flex: 1, backgroundColor: '#38b6ff', padding: 10, borderRadius: 8, alignItems: 'center' },
   inactiveButton: { flex: 1, backgroundColor: '#704f46', padding: 10, borderRadius: 8, alignItems: 'center' },
   deleteButton: { backgroundColor: '#d9534f', padding: 10, borderRadius: 8, alignItems: 'center' },
-  backButton: { backgroundColor: '#8c6a5d', padding: 12, borderRadius: 10, alignItems: 'center', marginBottom: 10 },
   buttonText: { color: '#fff', fontWeight: 'bold' },
 });
