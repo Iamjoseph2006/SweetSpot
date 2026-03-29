@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 
 const TOKEN_KEY = 'sweetspot_access_token';
 let memoryToken = '';
+const SECURE_STORE_OPTIONS = { keychainService: TOKEN_KEY } as const;
 
 const encode = (value: string) => {
   if (typeof btoa === 'function') {
@@ -34,7 +35,7 @@ export async function saveToken(token: string) {
   const SecureStore = getSecureStore();
 
   if (SecureStore?.setItemAsync) {
-    await SecureStore.setItemAsync(TOKEN_KEY, encoded, { keychainService: TOKEN_KEY });
+    await SecureStore.setItemAsync(TOKEN_KEY, encoded, SECURE_STORE_OPTIONS);
     return;
   }
 
@@ -48,7 +49,7 @@ export async function getToken() {
   const SecureStore = getSecureStore();
 
   if (SecureStore?.getItemAsync) {
-    const value = await SecureStore.getItemAsync(TOKEN_KEY);
+    const value = await SecureStore.getItemAsync(TOKEN_KEY, SECURE_STORE_OPTIONS);
     return decode(value ?? '');
   }
 
@@ -64,7 +65,7 @@ export async function removeToken() {
   const SecureStore = getSecureStore();
 
   if (SecureStore?.deleteItemAsync) {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await SecureStore.deleteItemAsync(TOKEN_KEY, SECURE_STORE_OPTIONS);
     return;
   }
 

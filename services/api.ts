@@ -162,6 +162,9 @@ export async function loginUser(data: {
 /* ENDPOINT PROTEGIDO */
 export async function getProtectedProfile(): Promise<ProtectedProfileResponse> {
   const token = await getToken();
+  if (!token) {
+    return { error: 'No hay sesión activa. Inicia sesión nuevamente.' };
+  }
 
   if (isE2EMode()) {
     return {
