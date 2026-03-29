@@ -49,8 +49,39 @@ const deleteProduct = async (req, res) => {
   }
 };
 
+const updateProduct = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, price, image } = req.body;
+
+    if (!name || price === undefined) {
+      return res.status(400).json({ error: 'name y price son obligatorios' });
+    }
+
+    const [result] = await db.query(
+      'UPDATE products SET name = ?, description = ?, price = ?, image = ? WHERE id = ?',
+      [name, description || '', Number(price), image || '', id]
+    );
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    res.json({
+      id: Number(id),
+      name,
+      description: description || '',
+      price: Number(price),
+      image: image || '',
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'No se pudo actualizar el producto' });
+  }
+};
+
 module.exports = {
   getProducts,
   createProduct,
   deleteProduct,
+  updateProduct,
 };
