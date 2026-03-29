@@ -1,15 +1,31 @@
 import { getToken } from './authStorage';
 
-const BASE_URL =
-  process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.0.9:3000/api';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.0.9:3000/api';
 
 const E2E_EMAIL = 'demo@email.com';
 const E2E_PASSWORD = '123456';
 const E2E_TOKEN = 'e2e-demo-token';
 
 const isE2EMode = () =>
-  process.env.EXPO_PUBLIC_E2E_MODE === 'true' ||
-  process.env.NODE_ENV === 'test';
+  process.env.EXPO_PUBLIC_E2E_MODE === 'true' || process.env.NODE_ENV === 'test';
+
+export type Product = {
+  id: number;
+  name: string;
+  description: string;
+  price: number;
+  image: string;
+};
+
+export type CartItem = {
+  id: number;
+  user_id: number;
+  product_id: number;
+  quantity: number;
+  name: string;
+  price: number;
+  image: string;
+};
 
 /* REGISTRO DE USUARIO */
 export async function registerUser(data: {
@@ -77,17 +93,60 @@ export async function getProtectedProfile() {
 }
 
 /* VALIDACIÓN ASÍNCRONA */
-export async function checkEmailExists(
-  email: string
-): Promise<boolean> {
+export async function checkEmailExists(email: string): Promise<boolean> {
   if (isE2EMode()) {
     return email === E2E_EMAIL;
   }
 
-  const response = await fetch(
-    `${BASE_URL}/auth/check-email?email=${email}`
-  );
-
+  const response = await fetch(`${BASE_URL}/auth/check-email?email=${email}`);
   const data = await response.json();
   return data.exists;
+}
+
+export async function getProducts(): Promise<Product[]> {
+  const response = await fetch(`${BASE_URL}/products`);
+  if (!response.ok) {
+    throw new Error('No se pudieron cargar los productos');
+  }
+  return response.json();
+}
+
+export async function addProductToCart(payload: {
+  user_id: number;
+  product_id: number;
+  quantity: number;
+}) {
+  const response = await fetch(`${BASE_URL}/cart`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  return response.json();
+}
+
+export async function getCartByUser(userId: number): Promise<CartItem[]> {
+  const response = await fetch(`${BASE_URL}/cart/${userId}`);
+  if (!response.ok) {
+    throw new Error('No se pudo obtener el carrito');
+  }
+  return response.json();
+}
+
+export async function deleteCartItem(id: number) {
+  const response = await fetch(`${BASE_URL}/cart/${id}`, {
+    method: 'DELETE',
+  });
+
+  return response.json();
+}
+
+export async function createOrder(user_id: number) {
+  const response = await fetch(`${BASE_URL}/orders`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ user_id }),
+  });
+
+  return response.json();
 }

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { z } from 'zod';
 import { loginUser } from '../../services/api';
-import { buildLoginPayload, mapInternalError } from '../../services/authLogic';
+import { mapInternalError } from '../../services/authLogic';
 import { getToken, saveToken } from '../../services/authStorage';
 
 const loginSchema = z.object({
