@@ -34,6 +34,8 @@ const profile = async (req, res) => {
         role_id: user.role_id,
         name: user.name,
         email: user.email,
+        full_name: user.full_name || user.nombre,
+        correo: user.correo || user.email,
       },
     });
   } catch (error) {

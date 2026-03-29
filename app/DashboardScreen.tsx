@@ -25,14 +25,12 @@ export default function DashboardScreen() {
 
       if (data.error) {
         await removeToken();
-        if (router.canDismiss()) {
-          router.dismissAll();
-        }
+        router.dismissAll();
         router.replace('/auth/LoginScreen');
         return;
       }
 
-      setMessage(data.message);
+      setMessage(data.message ?? '');
       setUser(data.user ?? null);
       setLoading(false);
     };
@@ -42,21 +40,19 @@ export default function DashboardScreen() {
 
   const handleLogout = async () => {
     await removeToken();
-    if (router.canDismiss()) {
-      router.dismissAll();
-    }
+    router.dismissAll();
     router.replace('/auth/LoginScreen');
   };
 
   const isAdmin = user?.role_id === 1;
-  const displayName = user?.name || user?.full_name || 'Sin nombre';
+  const displayName = user?.name || user?.full_name || 'Si';
   const displayEmail = user?.email || user?.correo || 'Sin correo';
   const roleLabel = isAdmin ? 'Administrador' : 'Cliente';
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title} testID="dashboard-title">
-        Bienvenido{displayName !== 'Sin nombre' ? `, ${displayName}` : ' a SweetSpot'}
+        Bienvenido{displayName !== 'Si' ? `, ${displayName}` : ' a SweetSpot'}
       </Text>
 
       {!loading && <Text style={styles.headerEmail}>{displayEmail}</Text>}

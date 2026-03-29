@@ -53,29 +53,33 @@ export type ProtectedProfileResponse = {
   error?: string;
 };
 
-const normalizeProfileUser = (raw: any): ProfileUser | null => {
-  if (!raw || typeof raw !== 'object') {
+const normalizeProfileUser = (payload: any): ProfileUser | null => {
+  if (!payload || typeof payload !== 'object') {
     return null;
   }
 
-  const user = raw.user && typeof raw.user === 'object' ? raw.user : raw;
-  const id = Number(user.id ?? user.user_id);
-  const roleId = Number(user.role_id ?? user.roleId ?? 2);
+  // El payload del servidor viene con estructura: { message, user: {...} }
+  // Extraer el usuario del payload
+  const userData = payload.user || payload;
+  
+  if (!userData || typeof userData !== 'object') {
+    return null;
+  }
 
+  const id = Number(userData.id ?? userData.user_id);
   if (!Number.isFinite(id) || id <= 0) {
     return null;
   }
 
-  const name = user.name ?? user.full_name ?? user.nombre;
-  const email = user.email ?? user.correo;
+  const roleId = Number(userData.role_id ?? userData.roleId ?? 2);
 
   return {
     id,
-    role_id: Number.isFinite(roleId) ? roleId : 2,
-    name: typeof name === 'string' ? name : undefined,
-    full_name: typeof user.full_name === 'string' ? user.full_name : undefined,
-    email: typeof email === 'string' ? email : undefined,
-    correo: typeof user.correo === 'string' ? user.correo : undefined,
+    role_id: roleId,
+    name: userData.name || undefined,
+    email: userData.email || undefined,
+    full_name: userData.full_name || userData.nombre || undefined,
+    correo: userData.correo || userData.email || undefined,
   };
 };
 
@@ -87,7 +91,7 @@ const normalizeOrders = (payload: any): Order[] => {
       : [];
 
   return rows
-    .map((raw) => ({
+    .map((raw: any) => ({
       id: Number(raw?.id),
       user_id: Number(raw?.user_id ?? raw?.userId),
       total: Number(raw?.total ?? 0),
@@ -96,7 +100,7 @@ const normalizeOrders = (payload: any): Order[] => {
       name: typeof raw?.name === 'string' ? raw.name : undefined,
       email: typeof raw?.email === 'string' ? raw.email : undefined,
     }))
-    .filter((order) => Number.isFinite(order.id) && Number.isFinite(order.user_id));
+    .filter((order: Order) => Number.isFinite(order.id) && Number.isFinite(order.user_id));
 };
 
 const E2E_ORDERS: Order[] = [
