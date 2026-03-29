@@ -9,6 +9,8 @@ type DashboardUser = {
   role_id: number;
   name?: string;
   email?: string;
+  full_name?: string;
+  correo?: string;
 };
 
 export default function DashboardScreen() {
@@ -23,6 +25,7 @@ export default function DashboardScreen() {
 
       if (data.error) {
         await removeToken();
+        router.dismissAll();
         router.replace('/auth/LoginScreen');
         return;
       }
@@ -37,17 +40,22 @@ export default function DashboardScreen() {
 
   const handleLogout = async () => {
     await removeToken();
+    router.dismissAll();
     router.replace('/auth/LoginScreen');
   };
 
   const isAdmin = user?.role_id === 1;
+  const displayName = user?.name || user?.full_name || 'Sin nombre';
+  const displayEmail = user?.email || user?.correo || 'Sin correo';
   const roleLabel = isAdmin ? 'Administrador' : 'Cliente';
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title} testID="dashboard-title">
-        Bienvenido a SweetSpot
+        Bienvenido{displayName !== 'Sin nombre' ? `, ${displayName}` : ' a SweetSpot'}
       </Text>
+
+      {!loading && <Text style={styles.headerEmail}>{displayEmail}</Text>}
 
       {loading ? (
         <ActivityIndicator color="#704f46" size="large" testID="dashboard-loader" />
@@ -56,9 +64,9 @@ export default function DashboardScreen() {
           <View style={styles.profileCard}>
             <Text style={styles.sectionTitle}>Tu perfil</Text>
             <Text style={styles.profileLabel}>Nombre</Text>
-            <Text style={styles.profileValue}>{user?.name || 'Sin nombre'}</Text>
+            <Text style={styles.profileValue}>{displayName}</Text>
             <Text style={styles.profileLabel}>Correo</Text>
-            <Text style={styles.profileValue}>{user?.email || 'Sin correo'}</Text>
+            <Text style={styles.profileValue}>{displayEmail}</Text>
             <Text style={styles.profileLabel}>Rol</Text>
             <Text style={styles.profileValue}>{roleLabel}</Text>
           </View>
@@ -108,6 +116,12 @@ const styles = StyleSheet.create({
     color: '#704f46',
     marginBottom: 18,
     textAlign: 'center',
+  },
+  headerEmail: {
+    textAlign: 'center',
+    color: '#9a7f76',
+    marginBottom: 18,
+    fontSize: 14,
   },
   profileCard: {
     backgroundColor: '#ffffff',

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Image, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function WelcomeScreen() {
@@ -6,6 +6,12 @@ export default function WelcomeScreen() {
 
   return (
     <View style={styles.container}>
+      <Image
+        source={require('../../assets/images/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
       <Text style={styles.title}>Bienvenido a Sweet Spot</Text>
 
       <Text style={styles.text}>
@@ -37,6 +43,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
     backgroundColor: '#fff3f9',
+  },
+  logo: {
+    width: 160,
+    height: 160,
+    alignSelf: 'center',
+    marginBottom: 14,
   },
   title: {
     fontSize: 28,

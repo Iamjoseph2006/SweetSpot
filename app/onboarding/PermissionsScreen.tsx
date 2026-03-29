@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Image, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function PermissionsScreen() {
@@ -6,6 +6,12 @@ export default function PermissionsScreen() {
 
   return (
     <View style={styles.container}>
+      <Image
+        source={require('../../assets/images/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
       <Text style={styles.title}>Todo listo</Text>
 
       <Text style={styles.text}>
@@ -28,6 +34,13 @@ export default function PermissionsScreen() {
       >
         <Text style={styles.btnSecondaryText}>Atrás</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.btnSkip}
+        onPress={() => router.replace('/auth/RegisterScreen')}
+      >
+        <Text style={styles.btnSkipText}>Saltar</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -38,6 +51,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
     backgroundColor: '#fff3f9',
+  },
+  logo: {
+    width: 130,
+    height: 130,
+    alignSelf: 'center',
+    marginBottom: 12,
   },
   title: {
     fontSize: 26,
@@ -72,11 +91,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#38b6ff', // azul
     paddingVertical: 14,
     borderRadius: 25,
+    marginBottom: 16,
   },
   btnSecondaryText: {
     color: '#fff',
     fontWeight: 'bold',
     textAlign: 'center',
     fontSize: 16,
+  },
+
+  /* Saltar */
+  btnSkip: {
+    alignItems: 'center',
+  },
+  btnSkipText: {
+    color: '#38b6ff',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });
