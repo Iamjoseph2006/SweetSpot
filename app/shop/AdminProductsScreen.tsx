@@ -150,7 +150,9 @@ export default function AdminProductsScreen() {
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            {item.image ? <Image source={{ uri: item.image }} style={styles.productImage} /> : null}
+            {item.image ? (
+              <Image source={{ uri: item.image }} style={styles.productImage} contentFit="contain" />
+            ) : null}
             <Text style={styles.name}>{item.name}</Text>
             <Text style={styles.details}>${item.price}</Text>
             <View style={styles.row}>
@@ -174,7 +176,13 @@ export default function AdminProductsScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48 },
-  title: { fontSize: 21, fontWeight: 'bold', color: '#704f46', marginBottom: 12 },
+  title: {
+    fontSize: 21,
+    fontWeight: 'bold',
+    color: '#704f46',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
@@ -193,7 +201,13 @@ const styles = StyleSheet.create({
   },
   list: { paddingVertical: 12 },
   card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 10 },
-  productImage: { width: '100%', height: 120, borderRadius: 8, marginBottom: 8 },
+  productImage: {
+    width: '100%',
+    height: 120,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#f8f2f6',
+  },
   name: { fontSize: 17, fontWeight: '600', color: '#704f46' },
   details: { color: '#704f46', marginBottom: 8 },
   row: { flexDirection: 'row', gap: 8 },

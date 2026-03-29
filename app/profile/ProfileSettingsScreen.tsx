@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   StyleSheet,
   Text,
@@ -8,7 +9,14 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { getProtectedProfile } from '../../services/api';
 import { useProfileSettingsViewModel } from '../viewmodels/useProfileSettingsViewModel';
+
+type ProfileUser = {
+  role_id: number;
+  name?: string;
+  email?: string;
+};
 
 export default function ProfileSettingsScreen() {
   const {
@@ -25,10 +33,51 @@ export default function ProfileSettingsScreen() {
   const [address, setAddress] = useState('Av. Dulce 123, Ciudad SweetSpot');
   const [paymentMethod, setPaymentMethod] = useState('Tarjeta terminada en 1234');
   const [preference, setPreference] = useState('Sin lactosa y poco azúcar');
+  const [user, setUser] = useState<ProfileUser | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+
+  useEffect(() => {
+    const loadProfile = async () => {
+      try {
+        const data = await getProtectedProfile();
+
+        if (data.error) {
+          Alert.alert('Perfil', data.error);
+          return;
+        }
+
+        setUser(data.user ?? null);
+      } catch {
+        Alert.alert('Error', 'No se pudo cargar tu perfil');
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+
+    loadProfile();
+  }, []);
+
+  const roleLabel = user?.role_id === 1 ? 'Administrador' : 'Cliente';
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Perfil / Configuración</Text>
+
+      <View style={styles.card}>
+        <Text style={styles.cardTitle}>Datos de tu perfil</Text>
+        {loadingProfile ? (
+          <ActivityIndicator color="#704f46" />
+        ) : (
+          <>
+            <Text style={styles.profileLabel}>Nombre</Text>
+            <Text style={styles.profileValue}>{user?.name || 'Sin nombre'}</Text>
+            <Text style={styles.profileLabel}>Correo</Text>
+            <Text style={styles.profileValue}>{user?.email || 'Sin correo'}</Text>
+            <Text style={styles.profileLabel}>Rol</Text>
+            <Text style={styles.profileValue}>{roleLabel}</Text>
+          </>
+        )}
+      </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Datos principales</Text>
@@ -101,6 +150,16 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '700',
     color: '#704f46',
+  },
+  profileLabel: {
+    fontSize: 13,
+    color: '#9a7f76',
+    marginTop: 4,
+  },
+  profileValue: {
+    fontSize: 16,
+    color: '#4f3a34',
+    fontWeight: '600',
   },
   input: {
     borderWidth: 1,

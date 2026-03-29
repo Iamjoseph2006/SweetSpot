@@ -62,7 +62,9 @@ export default function CatalogScreen() {
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
             <View style={styles.card}>
-              {item.image ? <Image source={{ uri: item.image }} style={styles.productImage} /> : null}
+              {item.image ? (
+                <Image source={{ uri: item.image }} style={styles.productImage} contentFit="contain" />
+              ) : null}
               <Text style={styles.productName}>{item.name}</Text>
               <Text style={styles.productPrice}>${item.price}</Text>
               <TouchableOpacity style={styles.button} onPress={() => handleAddToCart(item.id)}>
@@ -86,7 +88,13 @@ export default function CatalogScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48 },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#704f46', marginBottom: 8 },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#704f46',
+    marginBottom: 8,
+    textAlign: 'center',
+  },
   list: { paddingBottom: 16 },
   card: {
     backgroundColor: '#fff',
@@ -94,7 +102,13 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 10,
   },
-  productImage: { width: '100%', height: 130, borderRadius: 8, marginBottom: 8 },
+  productImage: {
+    width: '100%',
+    height: 130,
+    borderRadius: 8,
+    marginBottom: 8,
+    backgroundColor: '#f8f2f6',
+  },
   productName: { fontSize: 18, fontWeight: '600', color: '#704f46' },
   productPrice: { fontSize: 16, color: '#704f46', marginBottom: 8 },
   button: { backgroundColor: '#704f46', padding: 10, borderRadius: 8, alignItems: 'center' },
