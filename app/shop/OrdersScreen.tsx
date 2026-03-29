@@ -19,7 +19,9 @@ export default function OrdersScreen() {
 
       if (profile.error || !profile.user?.id) {
         await removeToken();
-        router.dismissAll();
+        if (router.canDismiss()) {
+          router.dismissAll();
+        }
         router.replace('/auth/LoginScreen');
         return;
       }
