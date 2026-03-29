@@ -109,12 +109,6 @@ export default function DashboardScreen() {
               </>
             )}
 
-            <TouchableOpacity
-              style={[styles.actionButton, styles.btnProfile]}
-              onPress={() => router.push('/profile/ProfileSettingsScreen')}
-            >
-              <Text style={styles.btnText}>Perfil + Geolocalización + Archivos</Text>
-            </TouchableOpacity>
           </View>
         </>
       )}
@@ -191,9 +185,6 @@ const styles = StyleSheet.create({
   },
   btnOrders: {
     backgroundColor: '#38b6ff',
-  },
-  btnProfile: {
-    backgroundColor: '#8c6a5d',
   },
   actionButton: {
     paddingVertical: 14,
