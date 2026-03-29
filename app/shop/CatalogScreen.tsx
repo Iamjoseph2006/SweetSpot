@@ -10,18 +10,31 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { addProductToCart, getProducts, Product } from '../../services/api';
-
-const DEMO_USER_ID = 1;
+import { addProductToCart, getProducts, getProtectedProfile, Product } from '../../services/api';
 
 export default function CatalogScreen() {
   const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [userId, setUserId] = useState<number | null>(null);
 
   useEffect(() => {
     loadProducts();
+    loadProfile();
   }, []);
+
+
+  const loadProfile = async () => {
+    try {
+      const data = await getProtectedProfile();
+
+      if (!data.error && data.user?.id) {
+        setUserId(data.user.id);
+      }
+    } catch {
+      setUserId(null);
+    }
+  };
 
   const loadProducts = async () => {
     try {
@@ -35,8 +48,13 @@ export default function CatalogScreen() {
   };
 
   const handleAddToCart = async (productId: number) => {
+    if (!userId) {
+      Alert.alert('Perfil', 'No se pudo identificar tu usuario');
+      return;
+    }
+
     const response = await addProductToCart({
-      user_id: DEMO_USER_ID,
+      user_id: userId,
       product_id: productId,
       quantity: 1,
     });

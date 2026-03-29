@@ -1,4 +1,5 @@
 const { registerUser, loginUser } = require('../services/authService');
+const User = require('../models/userModel');
 
 const register = async (req, res) => {
   try {
@@ -19,10 +20,25 @@ const login = async (req, res) => {
 };
 
 const profile = async (req, res) => {
-  res.json({
-    message: 'Acceso autorizado al endpoint protegido',
-    user: req.user,
-  });
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    return res.json({
+      message: 'Acceso autorizado al endpoint protegido',
+      user: {
+        id: user.id,
+        role_id: user.role_id,
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ error: 'No se pudo cargar el perfil' });
+  }
 };
 
 module.exports = { register, login, profile };

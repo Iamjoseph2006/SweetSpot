@@ -26,6 +26,7 @@ export default function RootLayout() {
         <Stack.Screen name="shop/AdminProductsScreen" />
         <Stack.Screen name="shop/CartScreen" />
         <Stack.Screen name="shop/OrderScreen" />
+        <Stack.Screen name="shop/OrdersScreen" />
         <Stack.Screen name="profile/ProfileSettingsScreen" />
       </Stack>
 

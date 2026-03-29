@@ -1,41 +1,148 @@
 import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { CartItem, createOrder, deleteCartItem, getCartByUser } from '../../services/api';
-
-const DEMO_USER_ID = 1;
+import { useCallback, useEffect, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  FlatList,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { CartItem, createOrder, deleteCartItem, getCartByUser, getProtectedProfile } from '../../services/api';
+import { readNativeNote, saveNativeNote } from '../../services/native/fileSystemService';
+import { getCurrentLocation, requestLocationPermission } from '../../services/native/locationService';
 
 export default function CartScreen() {
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
+  const [userId, setUserId] = useState<number | null>(null);
+
+  const [deliveryLocation, setDeliveryLocation] = useState('Ubicación no registrada');
+  const [preference, setPreference] = useState('');
+  const [nativeLoading, setNativeLoading] = useState(false);
+
+  const loadProfile = useCallback(async () => {
+    try {
+      const data = await getProtectedProfile();
+
+      if (data.error || !data.user?.id) {
+        return;
+      }
+
+      setUserId(data.user.id);
+    } catch {
+      setUserId(null);
+    }
+  }, []);
 
   const loadCart = useCallback(async () => {
     try {
-      const data = await getCartByUser(DEMO_USER_ID);
+      if (!userId) {
+        setItems([]);
+        return;
+      }
+
+      const data = await getCartByUser(userId);
       setItems(data);
     } catch {
       Alert.alert('Error', 'No se pudo cargar el carrito');
+    }
+  }, [userId]);
+
+  const loadSavedPreference = useCallback(async () => {
+    try {
+      setNativeLoading(true);
+      const saved = await readNativeNote();
+      if (!saved) {
+        Alert.alert('Preferencias', 'Aún no tienes una preferencia guardada');
+        return;
+      }
+      setPreference(saved);
+    } catch {
+      Alert.alert('Error', 'No se pudo leer la preferencia guardada');
+    } finally {
+      setNativeLoading(false);
     }
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      loadCart();
-    }, [loadCart])
+      loadProfile();
+      loadSavedPreference();
+    }, [loadProfile, loadSavedPreference])
   );
+
+  useEffect(() => {
+    loadCart();
+  }, [loadCart]);
 
   const handleDelete = async (id: number) => {
     await deleteCartItem(id);
     loadCart();
   };
 
+  const handleUseCurrentLocation = async () => {
+    try {
+      setNativeLoading(true);
+      const permission = await requestLocationPermission();
+
+      if (permission !== 'granted') {
+        Alert.alert('Ubicación', 'Debes habilitar permisos para usar tu ubicación de entrega');
+        return;
+      }
+
+      const location = await getCurrentLocation();
+      if (!location) {
+        Alert.alert('Ubicación', 'No fue posible obtener la ubicación actual');
+        return;
+      }
+
+      setDeliveryLocation(
+        `Lat ${location.latitude.toFixed(5)} / Lon ${location.longitude.toFixed(5)}`
+      );
+    } catch {
+      Alert.alert('Error', 'No se pudo actualizar la ubicación');
+    } finally {
+      setNativeLoading(false);
+    }
+  };
+
+  const handleSavePreference = async () => {
+    if (!preference.trim()) {
+      Alert.alert('Preferencias', 'Escribe una preferencia antes de guardar');
+      return;
+    }
+
+    try {
+      setNativeLoading(true);
+      await saveNativeNote(preference.trim());
+      Alert.alert('Listo', 'Preferencia guardada en almacenamiento local');
+    } catch {
+      Alert.alert('Error', 'No se pudo guardar la preferencia');
+    } finally {
+      setNativeLoading(false);
+    }
+  };
+
   const handleConfirmOrder = async () => {
-    const response = await createOrder(DEMO_USER_ID);
+    if (!userId) {
+      Alert.alert('Perfil', 'No se pudo identificar tu usuario');
+      return;
+    }
+
+    const response = await createOrder(userId);
 
     if (response.error) {
       Alert.alert('Error', response.error);
       return;
     }
+
+    Alert.alert(
+      'Pedido confirmado',
+      `Entrega: ${deliveryLocation}\nPreferencia: ${preference.trim() || 'Sin preferencias'}`
+    );
 
     router.replace('/shop/OrderScreen');
   };
@@ -63,6 +170,33 @@ export default function CartScreen() {
         )}
       />
 
+      <View style={styles.nativeCard}>
+        <Text style={styles.nativeTitle}>Datos de entrega (funciones nativas)</Text>
+        <Text style={styles.nativeInfo}>Ubicación: {deliveryLocation}</Text>
+
+        <TouchableOpacity style={styles.nativeButton} onPress={handleUseCurrentLocation}>
+          <Text style={styles.buttonText}>Usar mi ubicación actual</Text>
+        </TouchableOpacity>
+
+        <TextInput
+          style={styles.input}
+          value={preference}
+          onChangeText={setPreference}
+          placeholder="Ej: sin lactosa, tocar timbre..."
+          multiline
+        />
+
+        <TouchableOpacity style={styles.nativeButton} onPress={handleSavePreference}>
+          <Text style={styles.buttonText}>Guardar preferencia local</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.secondaryButton} onPress={loadSavedPreference}>
+          <Text style={styles.buttonText}>Cargar preferencia guardada</Text>
+        </TouchableOpacity>
+
+        {nativeLoading ? <ActivityIndicator color="#704f46" /> : null}
+      </View>
+
       <Text style={styles.total}>Total: ${total.toFixed(2)}</Text>
 
       <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmOrder}>
@@ -71,6 +205,10 @@ export default function CartScreen() {
 
       <TouchableOpacity style={styles.backButton} onPress={() => router.push('/shop/CatalogScreen')}>
         <Text style={styles.buttonText}>Seguir comprando</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.ordersButton} onPress={() => router.push('/shop/OrdersScreen')}>
+        <Text style={styles.buttonText}>Mis pedidos</Text>
       </TouchableOpacity>
     </View>
   );
@@ -97,11 +235,45 @@ const styles = StyleSheet.create({
   name: { fontSize: 16, fontWeight: '600', color: '#704f46' },
   details: { color: '#704f46' },
   empty: { textAlign: 'center', color: '#704f46', marginTop: 24 },
+  nativeCard: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#f2d8e5',
+    padding: 12,
+    marginVertical: 8,
+    gap: 8,
+  },
+  nativeTitle: { fontWeight: '700', color: '#704f46' },
+  nativeInfo: { color: '#704f46' },
+  nativeButton: { backgroundColor: '#704f46', padding: 11, borderRadius: 10, alignItems: 'center' },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    padding: 10,
+    minHeight: 56,
+    textAlignVertical: 'top',
+  },
   total: { fontSize: 18, fontWeight: 'bold', color: '#704f46', marginVertical: 12 },
   deleteButton: { backgroundColor: '#d9534f', padding: 10, borderRadius: 8 },
   confirmButton: { backgroundColor: '#38b6ff', padding: 12, borderRadius: 10, alignItems: 'center' },
   backButton: {
     backgroundColor: '#8c6a5d',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  secondaryButton: {
+    backgroundColor: '#f59e0b',
+    padding: 11,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  ordersButton: {
+    backgroundColor: '#704f46',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',

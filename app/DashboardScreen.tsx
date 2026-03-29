@@ -78,20 +78,43 @@ export default function DashboardScreen() {
             </Text>
 
             {isAdmin ? (
-              <TouchableOpacity
-                style={[styles.actionButton, styles.btnAdmin]}
-                onPress={() => router.push('/shop/AdminProductsScreen')}
-              >
-                <Text style={styles.btnText}>Gestionar Productos</Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.btnAdmin]}
+                  onPress={() => router.push('/shop/AdminProductsScreen')}
+                >
+                  <Text style={styles.btnText}>Gestionar Productos</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.btnOrders]}
+                  onPress={() => router.push('/shop/OrdersScreen')}
+                >
+                  <Text style={styles.btnText}>Gestionar Pedidos</Text>
+                </TouchableOpacity>
+              </>
             ) : (
-              <TouchableOpacity
-                style={[styles.actionButton, styles.btnCatalog]}
-                onPress={() => router.push('../shop/CatalogScreen')}
-              >
-                <Text style={styles.btnText}>Ir al Catálogo</Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.btnCatalog]}
+                  onPress={() => router.push('../shop/CatalogScreen')}
+                >
+                  <Text style={styles.btnText}>Ir al Catálogo</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.actionButton, styles.btnOrders]}
+                  onPress={() => router.push('/shop/OrdersScreen')}
+                >
+                  <Text style={styles.btnText}>Ver mis pedidos</Text>
+                </TouchableOpacity>
+              </>
             )}
+
+            <TouchableOpacity
+              style={[styles.actionButton, styles.btnProfile]}
+              onPress={() => router.push('/profile/ProfileSettingsScreen')}
+            >
+              <Text style={styles.btnText}>Perfil + Geolocalización + Archivos</Text>
+            </TouchableOpacity>
           </View>
         </>
       )}
@@ -165,6 +188,12 @@ const styles = StyleSheet.create({
   },
   btnAdmin: {
     backgroundColor: '#704f46',
+  },
+  btnOrders: {
+    backgroundColor: '#38b6ff',
+  },
+  btnProfile: {
+    backgroundColor: '#8c6a5d',
   },
   actionButton: {
     paddingVertical: 14,
