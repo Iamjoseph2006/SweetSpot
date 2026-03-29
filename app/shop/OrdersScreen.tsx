@@ -1,6 +1,7 @@
 import { useFocusEffect, useRouter } from 'expo-router';
+import { removeToken } from '../../services/authStorage';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getOrders, getProtectedProfile, Order, updateOrderStatus } from '../../services/api';
 
 const ADMIN_STATUSES = ['created', 'preparing', 'sent', 'delivered'];
@@ -9,18 +10,30 @@ export default function OrdersScreen() {
   const router = useRouter();
   const [orders, setOrders] = useState<Order[]>([]);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const loadOrders = useCallback(async () => {
     try {
+      setLoading(true);
       const profile = await getProtectedProfile();
-      setIsAdmin(profile.user?.role_id === 1);
+
+      if (profile.error || !profile.user?.id) {
+        await removeToken();
+        router.dismissAll();
+        router.replace('/auth/LoginScreen');
+        return;
+      }
+
+      setIsAdmin(profile.user.role_id === 1);
 
       const data = await getOrders();
       setOrders(data);
     } catch {
       Alert.alert('Error', 'No se pudieron cargar los pedidos');
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  }, [router]);
 
   useFocusEffect(
     useCallback(() => {
@@ -50,8 +63,13 @@ export default function OrdersScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>{isAdmin ? 'Gestión de pedidos' : 'Mis pedidos'}</Text>
 
-      <FlatList
-        data={orders}
+      {loading ? (
+        <View style={styles.loaderWrap}>
+          <ActivityIndicator color="#704f46" />
+        </View>
+      ) : (
+        <FlatList
+          data={orders}
         keyExtractor={(item) => String(item.id)}
         ListEmptyComponent={<Text style={styles.empty}>No hay pedidos todavía.</Text>}
         renderItem={({ item }) => (
@@ -74,7 +92,8 @@ export default function OrdersScreen() {
             ) : null}
           </View>
         )}
-      />
+        />
+      )}
 
       <TouchableOpacity style={styles.backButton} onPress={() => router.push('/DashboardScreen')}>
         <Text style={styles.buttonText}>Regresar al menú</Text>
@@ -101,6 +120,7 @@ const styles = StyleSheet.create({
   id: { fontWeight: '700', color: '#704f46', fontSize: 16, marginBottom: 4 },
   text: { color: '#704f46', marginBottom: 3 },
   empty: { textAlign: 'center', color: '#704f46', marginTop: 24 },
+  loaderWrap: { paddingVertical: 24 },
   statusButton: {
     backgroundColor: '#38b6ff',
     padding: 10,
