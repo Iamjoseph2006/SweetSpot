@@ -20,7 +20,12 @@ const loginUser = async ({ email, password }) => {
   if (!isMatch) throw new Error('Contraseña incorrecta');
 
   const token = jwt.sign(
-    { id: user.id, role_id: user.role_id },
+    {
+      id: user.id,
+      role_id: user.role_id,
+      name: user.name,
+      email: user.email,
+    },
     process.env.JWT_SECRET,
     { expiresIn: '1h' }
   );
