@@ -27,6 +27,16 @@ export type CartItem = {
   image: string;
 };
 
+export type Order = {
+  id: number;
+  user_id: number;
+  total: number;
+  status: string;
+  created_at: string;
+  name?: string;
+  email?: string;
+};
+
 /* REGISTRO DE USUARIO */
 export async function registerUser(data: {
   name: string;
@@ -150,10 +160,44 @@ export async function deleteCartItem(id: number) {
 }
 
 export async function createOrder(user_id: number) {
+  const token = await getToken();
+
   const response = await fetch(`${BASE_URL}/orders`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify({ user_id }),
+  });
+
+  return response.json();
+}
+
+export async function getOrders(): Promise<Order[]> {
+  const token = await getToken();
+  const response = await fetch(`${BASE_URL}/orders`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('No se pudieron obtener los pedidos');
+  }
+
+  return response.json();
+}
+
+export async function updateOrderStatus(id: number, status: string) {
+  const token = await getToken();
+  const response = await fetch(`${BASE_URL}/orders/${id}/status`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
   });
 
   return response.json();

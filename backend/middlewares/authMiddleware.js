@@ -18,4 +18,12 @@ const requireAuth = (req, res, next) => {
   }
 };
 
-module.exports = { requireAuth };
+const requireAdmin = (req, res, next) => {
+  if (req.user?.role_id !== 1) {
+    return res.status(403).json({ error: 'Solo administradores' });
+  }
+
+  return next();
+};
+
+module.exports = { requireAuth, requireAdmin };

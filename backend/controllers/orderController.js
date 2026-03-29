@@ -4,9 +4,9 @@ const createOrder = async (req, res) => {
   const connection = await db.getConnection();
 
   try {
-    const { user_id } = req.body;
+    const userId = req.user.role_id === 1 ? req.body.user_id : req.user.id;
 
-    if (!user_id) {
+    if (!userId) {
       connection.release();
       return res.status(400).json({ error: 'user_id es obligatorio' });
     }
@@ -18,7 +18,7 @@ const createOrder = async (req, res) => {
        FROM cart c
        INNER JOIN products p ON p.id = c.product_id
        WHERE c.user_id = ?`,
-      [user_id]
+      [userId]
     );
 
     if (cartItems.length === 0) {
@@ -31,7 +31,7 @@ const createOrder = async (req, res) => {
 
     const [orderResult] = await connection.query(
       'INSERT INTO orders (user_id, total, status, created_at) VALUES (?, ?, ?, NOW())',
-      [user_id, total, 'created']
+      [userId, total, 'created']
     );
 
     const orderId = orderResult.insertId;
@@ -43,7 +43,7 @@ const createOrder = async (req, res) => {
       );
     }
 
-    await connection.query('DELETE FROM cart WHERE user_id = ?', [user_id]);
+    await connection.query('DELETE FROM cart WHERE user_id = ?', [userId]);
 
     await connection.commit();
     connection.release();
@@ -60,6 +60,47 @@ const createOrder = async (req, res) => {
   }
 };
 
+const getOrders = async (req, res) => {
+  try {
+    const isAdmin = req.user.role_id === 1;
+    const [rows] = await db.query(
+      `SELECT o.id, o.user_id, o.total, o.status, o.created_at, u.name, u.email
+       FROM orders o
+       INNER JOIN users u ON u.id = o.user_id
+       ${isAdmin ? '' : 'WHERE o.user_id = ?'}
+       ORDER BY o.created_at DESC`,
+      isAdmin ? [] : [req.user.id]
+    );
+
+    res.json(rows);
+  } catch (error) {
+    res.status(500).json({ error: 'No se pudieron obtener los pedidos' });
+  }
+};
+
+const updateOrderStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status || !status.trim()) {
+      return res.status(400).json({ error: 'status es obligatorio' });
+    }
+
+    const [result] = await db.query('UPDATE orders SET status = ? WHERE id = ?', [status.trim(), id]);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+
+    return res.json({ message: 'Estado del pedido actualizado' });
+  } catch (error) {
+    return res.status(500).json({ error: 'No se pudo actualizar el pedido' });
+  }
+};
+
 module.exports = {
   createOrder,
+  getOrders,
+  updateOrderStatus,
 };
