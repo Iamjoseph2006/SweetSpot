@@ -68,6 +68,10 @@ export default function CartScreen() {
       <TouchableOpacity style={styles.confirmButton} onPress={handleConfirmOrder}>
         <Text style={styles.buttonText}>Confirmar pedido</Text>
       </TouchableOpacity>
+
+      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/shop/CatalogScreen')}>
+        <Text style={styles.buttonText}>Seguir comprando</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -90,5 +94,12 @@ const styles = StyleSheet.create({
   total: { fontSize: 18, fontWeight: 'bold', color: '#704f46', marginVertical: 12 },
   deleteButton: { backgroundColor: '#d9534f', padding: 10, borderRadius: 8 },
   confirmButton: { backgroundColor: '#38b6ff', padding: 12, borderRadius: 10, alignItems: 'center' },
+  backButton: {
+    backgroundColor: '#8c6a5d',
+    padding: 12,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 10,
+  },
   buttonText: { color: '#fff', fontWeight: 'bold' },
 });

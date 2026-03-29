@@ -49,7 +49,14 @@ export default function DashboardScreen() {
         style={styles.btnCatalog}
         onPress={() => router.push('../shop/CatalogScreen')}
       >
-        <Text style={styles.btnText}>Ir al catálogo</Text>
+        <Text style={styles.btnText}>Entrar como cliente</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.btnAdmin}
+        onPress={() => router.push('/shop/AdminProductsScreen')}
+      >
+        <Text style={styles.btnText}>Entrar como admin (CRUD)</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -100,6 +107,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#f59e0b',
     paddingVertical: 14,
     paddingHorizontal: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  btnAdmin: {
+    backgroundColor: '#704f46',
+    paddingVertical: 14,
+    paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 12,
