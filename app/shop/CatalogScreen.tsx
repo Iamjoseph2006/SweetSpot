@@ -1,5 +1,4 @@
 import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -11,12 +10,13 @@ import {
   View,
 } from 'react-native';
 import { addProductToCart, getProducts, getProtectedProfile, Product } from '../../services/api';
+import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 
 export default function CatalogScreen() {
-  const router = useRouter();
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<number | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     loadProducts();
@@ -30,6 +30,7 @@ export default function CatalogScreen() {
 
       if (!data.error && data.user?.id) {
         setUserId(data.user.id);
+        setIsAdmin(data.user.role_id === 1);
       }
     } catch {
       setUserId(null);
@@ -94,19 +95,13 @@ export default function CatalogScreen() {
         />
       )}
 
-      <TouchableOpacity style={styles.backButton} onPress={() => router.push('/DashboardScreen')}>
-        <Text style={styles.buttonText}>Regresar al menú</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/shop/CartScreen')}>
-        <Text style={styles.buttonText}>Ver carrito</Text>
-      </TouchableOpacity>
+      <AppFooterNav isAdmin={isAdmin} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48 },
+  container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48, paddingBottom: FOOTER_SPACE },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -132,19 +127,5 @@ const styles = StyleSheet.create({
   productPrice: { fontSize: 16, color: '#704f46' },
   productDescription: { color: '#7f6259', marginTop: 6, marginBottom: 10 },
   button: { backgroundColor: '#704f46', padding: 10, borderRadius: 8, alignItems: 'center' },
-  secondaryButton: {
-    backgroundColor: '#38b6ff',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  backButton: {
-    backgroundColor: '#8c6a5d',
-    padding: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    marginTop: 8,
-  },
   buttonText: { color: '#fff', fontWeight: 'bold' },
 });

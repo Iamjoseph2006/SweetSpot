@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { getProtectedProfile } from '../../services/api';
 import { useProfileSettingsViewModel } from '../viewmodels/useProfileSettingsViewModel';
+import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 
 type ProfileUser = {
   role_id: number;
@@ -62,10 +63,12 @@ export default function ProfileSettingsScreen() {
   const roleLabel = user?.role_id === 1 ? 'Administrador' : 'Cliente';
   const displayName = user?.name || user?.full_name || 'Sin nombre';
   const displayEmail = user?.email || user?.correo || 'Sin correo';
+  const isAdmin = user?.role_id === 1;
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Perfil / Configuración</Text>
+    <View style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Text style={styles.title}>Perfil / Configuración</Text>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Datos de tu perfil</Text>
@@ -125,15 +128,21 @@ export default function ProfileSettingsScreen() {
         <Text style={styles.info}>Ruta local: {savedFilePath || 'Aún no guardada'}</Text>
         <Text style={styles.info}>Contenido: {fileMessage}</Text>
       </View>
-    </ScrollView>
+      </ScrollView>
+      <AppFooterNav isAdmin={isAdmin} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: '#fff3f9',
+  },
   container: {
     flexGrow: 1,
-    backgroundColor: '#fff3f9',
     padding: 20,
+    paddingBottom: FOOTER_SPACE + 20,
     gap: 14,
   },
   title: {
