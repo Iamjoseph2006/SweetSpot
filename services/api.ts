@@ -80,7 +80,15 @@ export async function getProtectedProfile() {
   const token = await getToken();
 
   if (isE2EMode()) {
-    return { message: 'Dashboard listo para pruebas E2E' };
+    return {
+      message: 'Dashboard listo para pruebas E2E',
+      user: {
+        id: 1,
+        role_id: 2,
+        name: 'Cliente Demo',
+        email: E2E_EMAIL,
+      },
+    };
   }
 
   const response = await fetch(`${BASE_URL}/auth/profile`, {

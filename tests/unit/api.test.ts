@@ -27,6 +27,12 @@ describe('api service in E2E mode', () => {
   it('devuelve mensaje del dashboard para token válido en modo E2E', async () => {
     await expect(getProtectedProfile()).resolves.toEqual({
       message: 'Dashboard listo para pruebas E2E',
+      user: {
+        id: 1,
+        role_id: 2,
+        name: 'Cliente Demo',
+        email: 'demo@email.com',
+      },
     });
   });
 });

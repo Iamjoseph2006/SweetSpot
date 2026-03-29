@@ -1,12 +1,20 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { getProtectedProfile } from '../services/api';
 import { removeToken } from '../services/authStorage';
+
+type DashboardUser = {
+  id: number;
+  role_id: number;
+  name?: string;
+  email?: string;
+};
 
 export default function DashboardScreen() {
   const router = useRouter();
   const [message, setMessage] = useState('');
+  const [user, setUser] = useState<DashboardUser | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,6 +28,7 @@ export default function DashboardScreen() {
       }
 
       setMessage(data.message);
+      setUser(data.user ?? null);
       setLoading(false);
     };
 
@@ -31,100 +40,131 @@ export default function DashboardScreen() {
     router.replace('/auth/LoginScreen');
   };
 
+  const isAdmin = user?.role_id === 1;
+  const roleLabel = isAdmin ? 'Administrador' : 'Cliente';
+
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title} testID="dashboard-title">
-        Bienvenido al Dashboard
+        Bienvenido a SweetSpot
       </Text>
 
       {loading ? (
         <ActivityIndicator color="#704f46" size="large" testID="dashboard-loader" />
       ) : (
-        <Text style={styles.subtitle} testID="dashboard-message">
-          {message}
-        </Text>
+        <>
+          <View style={styles.profileCard}>
+            <Text style={styles.sectionTitle}>Tu perfil</Text>
+            <Text style={styles.profileLabel}>Nombre</Text>
+            <Text style={styles.profileValue}>{user?.name || 'Sin nombre'}</Text>
+            <Text style={styles.profileLabel}>Correo</Text>
+            <Text style={styles.profileValue}>{user?.email || 'Sin correo'}</Text>
+            <Text style={styles.profileLabel}>Rol</Text>
+            <Text style={styles.profileValue}>{roleLabel}</Text>
+          </View>
+
+          <View style={styles.actionsCard}>
+            <Text style={styles.sectionTitle}>Acciones rápidas</Text>
+            <Text style={styles.subtitle} testID="dashboard-message">
+              {message}
+            </Text>
+
+            {isAdmin ? (
+              <TouchableOpacity
+                style={[styles.actionButton, styles.btnAdmin]}
+                onPress={() => router.push('/shop/AdminProductsScreen')}
+              >
+                <Text style={styles.btnText}>Gestionar productos (CRUD)</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.actionButton, styles.btnCatalog]}
+                onPress={() => router.push('../shop/CatalogScreen')}
+              >
+                <Text style={styles.btnText}>Ir al catálogo</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        </>
       )}
-
-      <TouchableOpacity
-        style={styles.btnCatalog}
-        onPress={() => router.push('../shop/CatalogScreen')}
-      >
-        <Text style={styles.btnText}>Entrar como cliente</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.btnAdmin}
-        onPress={() => router.push('/shop/AdminProductsScreen')}
-      >
-        <Text style={styles.btnText}>Entrar como admin (CRUD)</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.btnProfile}
-        onPress={() => router.push('/profile/ProfileSettingsScreen')}
-        testID="dashboard-profile-button"
-      >
-        <Text style={styles.btnText}>Ir a Perfil / Configuración</Text>
-      </TouchableOpacity>
 
       <TouchableOpacity style={styles.btnLogout} onPress={handleLogout} testID="dashboard-logout-button">
         <Text style={styles.btnText}>Cerrar sesión</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
-    alignItems: 'center',
     backgroundColor: '#fff3f9',
     padding: 24,
   },
   title: {
-    fontSize: 24,
+    fontSize: 30,
     fontWeight: 'bold',
     color: '#704f46',
-    marginBottom: 16,
+    marginBottom: 18,
     textAlign: 'center',
+  },
+  profileCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#f2d8e5',
+  },
+  actionsCard: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: '#f2d8e5',
+  },
+  sectionTitle: {
+    fontSize: 20,
+    color: '#704f46',
+    fontWeight: '700',
+    marginBottom: 10,
+  },
+  profileLabel: {
+    fontSize: 13,
+    color: '#9a7f76',
+    marginTop: 8,
+  },
+  profileValue: {
+    fontSize: 16,
+    color: '#4f3a34',
+    fontWeight: '600',
   },
   subtitle: {
     fontSize: 15,
     color: '#704f46',
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  btnProfile: {
-    backgroundColor: '#8c6a5d',
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 12,
-    alignItems: 'center',
     marginBottom: 12,
   },
   btnCatalog: {
     backgroundColor: '#f59e0b',
-    paddingVertical: 14,
-    paddingHorizontal: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginBottom: 12,
   },
   btnAdmin: {
     backgroundColor: '#704f46',
+  },
+  actionButton: {
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 12,
     alignItems: 'center',
-    marginBottom: 12,
+    marginTop: 4,
   },
   btnLogout: {
     backgroundColor: '#38b6ff',
     paddingVertical: 14,
-    paddingHorizontal: 40,
     borderRadius: 12,
     alignItems: 'center',
+    marginTop: 4,
   },
   btnText: {
     color: '#fff',
