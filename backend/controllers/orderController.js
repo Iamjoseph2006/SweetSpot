@@ -64,7 +64,7 @@ const getOrders = async (req, res) => {
   try {
     const isAdmin = req.user.role_id === 1;
     const [rows] = await db.query(
-      `SELECT o.id, o.user_id, o.total, o.status, o.created_at, u.name, u.email
+      `SELECT o.id, o.user_id, o.total, o.status, o.created_at, u.*
        FROM orders o
        INNER JOIN users u ON u.id = o.user_id
        ${isAdmin ? '' : 'WHERE o.user_id = ?'}
@@ -72,7 +72,17 @@ const getOrders = async (req, res) => {
       isAdmin ? [] : [req.user.id]
     );
 
-    res.json(rows);
+    const normalizedRows = rows.map((row) => ({
+      id: row.id,
+      user_id: row.user_id,
+      total: row.total,
+      status: row.status,
+      created_at: row.created_at,
+      name: row.name ?? row.full_name ?? row.nombre ?? null,
+      email: row.email ?? row.correo ?? null,
+    }));
+
+    res.json(normalizedRows);
   } catch (error) {
     res.status(500).json({ error: 'No se pudieron obtener los pedidos' });
   }
