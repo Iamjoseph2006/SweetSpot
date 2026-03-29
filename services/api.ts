@@ -37,6 +37,18 @@ export type Order = {
   email?: string;
 };
 
+const E2E_ORDERS: Order[] = [
+  {
+    id: 1,
+    user_id: 1,
+    total: 18.5,
+    status: 'created',
+    created_at: '2026-01-01T10:00:00.000Z',
+    name: 'Cliente Demo',
+    email: E2E_EMAIL,
+  },
+];
+
 /* REGISTRO DE USUARIO */
 export async function registerUser(data: {
   name: string;
@@ -175,6 +187,10 @@ export async function createOrder(user_id: number) {
 }
 
 export async function getOrders(): Promise<Order[]> {
+  if (isE2EMode()) {
+    return E2E_ORDERS;
+  }
+
   const token = await getToken();
   const response = await fetch(`${BASE_URL}/orders`, {
     headers: {

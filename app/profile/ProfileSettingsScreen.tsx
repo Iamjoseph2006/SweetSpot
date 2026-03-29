@@ -15,7 +15,9 @@ import { useProfileSettingsViewModel } from '../viewmodels/useProfileSettingsVie
 type ProfileUser = {
   role_id: number;
   name?: string;
+  full_name?: string;
   email?: string;
+  correo?: string;
 };
 
 export default function ProfileSettingsScreen() {
@@ -58,6 +60,8 @@ export default function ProfileSettingsScreen() {
   }, []);
 
   const roleLabel = user?.role_id === 1 ? 'Administrador' : 'Cliente';
+  const displayName = user?.name || user?.full_name || 'Sin nombre';
+  const displayEmail = user?.email || user?.correo || 'Sin correo';
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -70,9 +74,9 @@ export default function ProfileSettingsScreen() {
         ) : (
           <>
             <Text style={styles.profileLabel}>Nombre</Text>
-            <Text style={styles.profileValue}>{user?.name || 'Sin nombre'}</Text>
+            <Text style={styles.profileValue}>{displayName}</Text>
             <Text style={styles.profileLabel}>Correo</Text>
-            <Text style={styles.profileValue}>{user?.email || 'Sin correo'}</Text>
+            <Text style={styles.profileValue}>{displayEmail}</Text>
             <Text style={styles.profileLabel}>Rol</Text>
             <Text style={styles.profileValue}>{roleLabel}</Text>
           </>
