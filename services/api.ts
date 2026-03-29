@@ -37,6 +37,68 @@ export type Order = {
   email?: string;
 };
 
+
+export type ProfileUser = {
+  id: number;
+  role_id: number;
+  name?: string;
+  email?: string;
+  full_name?: string;
+  correo?: string;
+};
+
+export type ProtectedProfileResponse = {
+  message?: string;
+  user?: ProfileUser | null;
+  error?: string;
+};
+
+const normalizeProfileUser = (raw: any): ProfileUser | null => {
+  if (!raw || typeof raw !== 'object') {
+    return null;
+  }
+
+  const user = raw.user && typeof raw.user === 'object' ? raw.user : raw;
+  const id = Number(user.id ?? user.user_id);
+  const roleId = Number(user.role_id ?? user.roleId ?? 2);
+
+  if (!Number.isFinite(id) || id <= 0) {
+    return null;
+  }
+
+  const name = user.name ?? user.full_name ?? user.nombre;
+  const email = user.email ?? user.correo;
+
+  return {
+    id,
+    role_id: Number.isFinite(roleId) ? roleId : 2,
+    name: typeof name === 'string' ? name : undefined,
+    full_name: typeof user.full_name === 'string' ? user.full_name : undefined,
+    email: typeof email === 'string' ? email : undefined,
+    correo: typeof user.correo === 'string' ? user.correo : undefined,
+  };
+};
+
+const normalizeOrders = (payload: any): Order[] => {
+  const rows = Array.isArray(payload)
+    ? payload
+    : Array.isArray(payload?.orders)
+      ? payload.orders
+      : [];
+
+  return rows
+    .map((raw) => ({
+      id: Number(raw?.id),
+      user_id: Number(raw?.user_id ?? raw?.userId),
+      total: Number(raw?.total ?? 0),
+      status: typeof raw?.status === 'string' ? raw.status : 'created',
+      created_at: String(raw?.created_at ?? raw?.createdAt ?? new Date().toISOString()),
+      name: typeof raw?.name === 'string' ? raw.name : undefined,
+      email: typeof raw?.email === 'string' ? raw.email : undefined,
+    }))
+    .filter((order) => Number.isFinite(order.id) && Number.isFinite(order.user_id));
+};
+
 const E2E_ORDERS: Order[] = [
   {
     id: 1,
@@ -98,7 +160,7 @@ export async function loginUser(data: {
 }
 
 /* ENDPOINT PROTEGIDO */
-export async function getProtectedProfile() {
+export async function getProtectedProfile(): Promise<ProtectedProfileResponse> {
   const token = await getToken();
 
   if (isE2EMode()) {
@@ -119,7 +181,16 @@ export async function getProtectedProfile() {
     },
   });
 
-  return response.json();
+  const payload = await response.json();
+
+  if (!response.ok) {
+    return { error: payload?.error || 'No se pudo cargar el perfil' };
+  }
+
+  return {
+    message: payload?.message,
+    user: normalizeProfileUser(payload),
+  };
 }
 
 /* VALIDACIÓN ASÍNCRONA */
@@ -198,11 +269,13 @@ export async function getOrders(): Promise<Order[]> {
     },
   });
 
+  const payload = await response.json();
+
   if (!response.ok) {
-    throw new Error('No se pudieron obtener los pedidos');
+    throw new Error(payload?.error || 'No se pudieron obtener los pedidos');
   }
 
-  return response.json();
+  return normalizeOrders(payload);
 }
 
 export async function updateOrderStatus(id: number, status: string) {
