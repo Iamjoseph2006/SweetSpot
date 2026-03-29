@@ -15,6 +15,7 @@ export type Product = {
   description: string;
   price: number;
   image: string;
+  active?: boolean;
 };
 
 export type CartItem = {
@@ -335,6 +336,23 @@ export async function updateProduct(
 export async function deleteProduct(id: number) {
   const response = await fetch(`${BASE_URL}/products/${id}`, {
     method: 'DELETE',
+  });
+
+  return response.json();
+}
+
+
+export async function inactivateProduct(id: number) {
+  const response = await fetch(`${BASE_URL}/products/${id}/inactivate`, {
+    method: 'PATCH',
+  });
+
+  return response.json();
+}
+
+export async function activateProduct(id: number) {
+  const response = await fetch(`${BASE_URL}/products/${id}/activate`, {
+    method: 'PATCH',
   });
 
   return response.json();

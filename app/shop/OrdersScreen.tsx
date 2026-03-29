@@ -78,7 +78,7 @@ export default function OrdersScreen() {
         ListEmptyComponent={<Text style={styles.empty}>No hay pedidos todavía.</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.id}>Pedido #{item.id}</Text>
+            <Text style={styles.id}>{isAdmin ? `Pedido #${item.id} · Usuario #${item.user_id}` : `Pedido #${item.id}`}</Text>
             <Text style={styles.text}>Estado: {item.status}</Text>
             <Text style={styles.text}>Total: ${Number(item.total).toFixed(2)}</Text>
             <Text style={styles.text}>
@@ -87,7 +87,7 @@ export default function OrdersScreen() {
 
             {isAdmin ? (
               <>
-                <Text style={styles.text}>Cliente: {item.name || 'Sin nombre'}</Text>
+                <Text style={styles.text}>Cliente: {item.name || `Usuario #${item.user_id}`}</Text>
                 <Text style={styles.text}>Correo: {item.email || 'Sin correo'}</Text>
                 <TouchableOpacity style={styles.statusButton} onPress={() => handleAdvanceStatus(item)}>
                   <Text style={styles.buttonText}>Avanzar estado</Text>

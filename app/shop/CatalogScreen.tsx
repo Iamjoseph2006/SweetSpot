@@ -39,7 +39,7 @@ export default function CatalogScreen() {
   const loadProducts = async () => {
     try {
       const data = await getProducts();
-      setProducts(data);
+      setProducts(data.filter((item) => item.active !== false));
     } catch {
       Alert.alert('Error', 'No se pudieron cargar los productos');
     } finally {
@@ -85,6 +85,7 @@ export default function CatalogScreen() {
               ) : null}
               <Text style={styles.productName}>{item.name}</Text>
               <Text style={styles.productPrice}>${item.price}</Text>
+              {item.description ? <Text style={styles.productDescription}>{item.description}</Text> : null}
               <TouchableOpacity style={styles.button} onPress={() => handleAddToCart(item.id)}>
                 <Text style={styles.buttonText}>Agregar al carrito</Text>
               </TouchableOpacity>
@@ -128,7 +129,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#f8f2f6',
   },
   productName: { fontSize: 18, fontWeight: '600', color: '#704f46' },
-  productPrice: { fontSize: 16, color: '#704f46', marginBottom: 8 },
+  productPrice: { fontSize: 16, color: '#704f46' },
+  productDescription: { color: '#7f6259', marginTop: 6, marginBottom: 10 },
   button: { backgroundColor: '#704f46', padding: 10, borderRadius: 8, alignItems: 'center' },
   secondaryButton: {
     backgroundColor: '#38b6ff',

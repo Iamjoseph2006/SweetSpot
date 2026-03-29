@@ -1,22 +1,7 @@
-import { Image } from 'expo-image';
-import { useFocusEffect, useRouter } from 'expo-router';
-import { useCallback, useState } from 'react';
-import {
-  Alert,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import {
-  createProduct,
-  deleteProduct,
-  getProducts,
-  Product,
-  updateProduct,
-} from '../../services/api';
+import { useRouter } from 'expo-router';
+import { useState } from 'react';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { createProduct } from '../../services/api';
 
 const EMPTY_FORM = {
   name: '',
@@ -27,28 +12,10 @@ const EMPTY_FORM = {
 
 export default function AdminProductsScreen() {
   const router = useRouter();
-  const [products, setProducts] = useState<Product[]>([]);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [editingId, setEditingId] = useState<number | null>(null);
-
-  const loadProducts = useCallback(async () => {
-    try {
-      const data = await getProducts();
-      setProducts(data);
-    } catch {
-      Alert.alert('Error', 'No se pudo cargar el catálogo');
-    }
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      loadProducts();
-    }, [loadProducts])
-  );
 
   const clearForm = () => {
     setForm(EMPTY_FORM);
-    setEditingId(null);
   };
 
   const handleSubmit = async () => {
@@ -69,44 +36,20 @@ export default function AdminProductsScreen() {
       return;
     }
 
-    const response = editingId
-      ? await updateProduct(editingId, payload)
-      : await createProduct(payload);
+    const response = await createProduct(payload);
 
     if (response.error) {
       Alert.alert('Error', response.error);
       return;
     }
 
-    Alert.alert('Listo', editingId ? 'Producto actualizado' : 'Producto creado');
+    Alert.alert('Listo', 'Producto creado');
     clearForm();
-    loadProducts();
-  };
-
-  const handleEdit = (product: Product) => {
-    setEditingId(product.id);
-    setForm({
-      name: product.name,
-      description: product.description || '',
-      price: String(product.price),
-      image: product.image || '',
-    });
-  };
-
-  const handleDelete = async (id: number) => {
-    const response = await deleteProduct(id);
-
-    if (response.error) {
-      Alert.alert('Error', response.error);
-      return;
-    }
-
-    loadProducts();
   };
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Añadir Productos</Text>
+      <Text style={styles.title}>Añadir producto</Text>
 
       <TextInput
         value={form.name}
@@ -135,37 +78,12 @@ export default function AdminProductsScreen() {
       />
 
       <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>{editingId ? 'Actualizar' : 'Crear producto'}</Text>
+        <Text style={styles.buttonText}>Crear producto</Text>
       </TouchableOpacity>
 
-      {editingId ? (
-        <TouchableOpacity style={styles.cancelButton} onPress={clearForm}>
-          <Text style={styles.buttonText}>Cancelar edición</Text>
-        </TouchableOpacity>
-      ) : null}
-
-      <FlatList
-        data={products}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            {item.image ? (
-              <Image source={{ uri: item.image }} style={styles.productImage} contentFit="contain" />
-            ) : null}
-            <Text style={styles.name}>{item.name}</Text>
-            <Text style={styles.details}>${item.price}</Text>
-            <View style={styles.row}>
-              <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(item)}>
-                <Text style={styles.buttonText}>Editar</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id)}>
-                <Text style={styles.buttonText}>Eliminar</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
+      <TouchableOpacity style={styles.manageButton} onPress={() => router.push('/shop/AdminProductsListScreen')}>
+        <Text style={styles.buttonText}>Ver productos</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity style={styles.backButton} onPress={() => router.push('/DashboardScreen')}>
         <Text style={styles.buttonText}>Regresar al menú</Text>
@@ -192,45 +110,19 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   saveButton: { backgroundColor: '#f59e0b', padding: 12, borderRadius: 10, alignItems: 'center' },
-  cancelButton: {
-    backgroundColor: '#8c6a5d',
+  manageButton: {
+    backgroundColor: '#38b6ff',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
     marginTop: 8,
-  },
-  list: { paddingVertical: 12 },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 10 },
-  productImage: {
-    width: '100%',
-    height: 120,
-    borderRadius: 8,
-    marginBottom: 8,
-    backgroundColor: '#f8f2f6',
-  },
-  name: { fontSize: 17, fontWeight: '600', color: '#704f46' },
-  details: { color: '#704f46', marginBottom: 8 },
-  row: { flexDirection: 'row', gap: 8 },
-  editButton: {
-    flex: 1,
-    backgroundColor: '#38b6ff',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  deleteButton: {
-    flex: 1,
-    backgroundColor: '#d9534f',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
   },
   backButton: {
     backgroundColor: '#8c6a5d',
     padding: 12,
     borderRadius: 10,
     alignItems: 'center',
-    marginBottom: 10,
+    marginTop: 8,
   },
   buttonText: { color: '#fff', fontWeight: 'bold' },
 });
