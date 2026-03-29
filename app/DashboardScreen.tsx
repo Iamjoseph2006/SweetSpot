@@ -44,6 +44,14 @@ export default function DashboardScreen() {
           {message}
         </Text>
       )}
+
+      <TouchableOpacity
+        style={styles.btnCatalog}
+        onPress={() => router.push('/shop/CatalogScreen')}
+      >
+        <Text style={styles.btnText}>Ir al catálogo</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity
         style={styles.btnProfile}
         onPress={() => router.push('/profile/ProfileSettingsScreen')}
@@ -84,6 +92,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#8c6a5d',
     paddingVertical: 14,
     paddingHorizontal: 20,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  btnCatalog: {
+    backgroundColor: '#f59e0b',
+    paddingVertical: 14,
+    paddingHorizontal: 40,
     borderRadius: 12,
     alignItems: 'center',
     marginBottom: 12,

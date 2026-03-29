@@ -22,6 +22,9 @@ export default function RootLayout() {
 
         {/* Vista protegida */}
         <Stack.Screen name="DashboardScreen" />
+        <Stack.Screen name="shop/CatalogScreen" />
+        <Stack.Screen name="shop/CartScreen" />
+        <Stack.Screen name="shop/OrderScreen" />
         <Stack.Screen name="profile/ProfileSettingsScreen" />
       </Stack>
 
