@@ -1,6 +1,8 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import type { ComponentProps } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { getProtectedProfile } from '../services/api';
 import { removeToken } from '../services/authStorage';
 
@@ -11,6 +13,12 @@ type DashboardUser = {
   email?: string;
   full_name?: string;
   correo?: string;
+};
+
+type QuickNavItem = {
+  label: string;
+  icon: ComponentProps<typeof Ionicons>['name'];
+  route: '/DashboardScreen' | '/shop/AdminProductsScreen' | '/shop/OrdersScreen' | '/profile/ProfileSettingsScreen' | '/shop/CartScreen' | '/shop/CatalogScreen';
 };
 
 export default function DashboardScreen() {
@@ -48,6 +56,19 @@ export default function DashboardScreen() {
   const displayName = user?.name || user?.full_name || 'Si';
   const displayEmail = user?.email || user?.correo || 'Sin correo';
   const roleLabel = isAdmin ? 'Administrador' : 'Cliente';
+  const quickNavItems: QuickNavItem[] = isAdmin
+    ? [
+        { label: 'Inicio', icon: 'home-outline', route: '/DashboardScreen' },
+        { label: 'Productos', icon: 'cube-outline', route: '/shop/AdminProductsScreen' },
+        { label: 'Pedidos', icon: 'receipt-outline', route: '/shop/OrdersScreen' },
+        { label: 'Perfil', icon: 'person-outline', route: '/profile/ProfileSettingsScreen' },
+      ]
+    : [
+        { label: 'Inicio', icon: 'home-outline', route: '/DashboardScreen' },
+        { label: 'Carrito', icon: 'cart-outline', route: '/shop/CartScreen' },
+        { label: 'Productos', icon: 'pricetag-outline', route: '/shop/CatalogScreen' },
+        { label: 'Pedidos', icon: 'receipt-outline', route: '/shop/OrdersScreen' },
+      ];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -116,6 +137,27 @@ export default function DashboardScreen() {
       <TouchableOpacity style={styles.btnLogout} onPress={handleLogout} testID="dashboard-logout-button">
         <Text style={styles.btnText}>Cerrar Sesión</Text>
       </TouchableOpacity>
+
+      {!loading && (
+        <View style={styles.bottomNavCard}>
+          <Text style={styles.bottomNavTitle}>Navegación rápida</Text>
+          <View style={styles.bottomNavRow}>
+            {quickNavItems.map((item) => (
+              <TouchableOpacity
+                key={item.label}
+                style={styles.navButton}
+                onPress={() => router.push(item.route)}
+                activeOpacity={0.85}
+              >
+                <View style={styles.navIconWrap}>
+                  <Ionicons name={item.icon} size={21} color="#704f46" />
+                </View>
+                <Text style={styles.navLabel}>{item.label}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -204,5 +246,48 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
+  },
+  bottomNavCard: {
+    marginTop: 16,
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderWidth: 1,
+    borderColor: '#f2d8e5',
+  },
+  bottomNavTitle: {
+    color: '#704f46',
+    fontWeight: '700',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  bottomNavRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    rowGap: 10,
+  },
+  navButton: {
+    width: '24%',
+    minWidth: 74,
+    alignItems: 'center',
+    gap: 5,
+  },
+  navIconWrap: {
+    backgroundColor: '#f9ebf3',
+    borderWidth: 1,
+    borderColor: '#f2d8e5',
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  navLabel: {
+    color: '#704f46',
+    fontSize: 12,
+    fontWeight: '600',
+    textAlign: 'center',
   },
 });
