@@ -82,14 +82,14 @@ export default function DashboardScreen() {
                 style={[styles.actionButton, styles.btnAdmin]}
                 onPress={() => router.push('/shop/AdminProductsScreen')}
               >
-                <Text style={styles.btnText}>Gestionar productos (CRUD)</Text>
+                <Text style={styles.btnText}>Gestionar Productos</Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
                 style={[styles.actionButton, styles.btnCatalog]}
                 onPress={() => router.push('../shop/CatalogScreen')}
               >
-                <Text style={styles.btnText}>Ir al catálogo</Text>
+                <Text style={styles.btnText}>Ir al Catálogo</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -97,7 +97,7 @@ export default function DashboardScreen() {
       )}
 
       <TouchableOpacity style={styles.btnLogout} onPress={handleLogout} testID="dashboard-logout-button">
-        <Text style={styles.btnText}>Cerrar sesión</Text>
+        <Text style={styles.btnText}>Cerrar Sesión</Text>
       </TouchableOpacity>
     </ScrollView>
   );
