@@ -26,10 +26,12 @@ export default function OrdersScreen() {
         return;
       }
 
-      setIsAdmin(profile.user.role_id === 1);
+      const admin = profile.user.role_id === 1;
+      setIsAdmin(admin);
 
       const data = await getOrders();
-      setOrders(data);
+      const visibleOrders = admin ? data : data.filter((order) => order.user_id === profile.user?.id);
+      setOrders(visibleOrders);
     } catch {
       Alert.alert('Error', 'No se pudieron cargar los pedidos');
     } finally {
