@@ -106,7 +106,7 @@ export default function AdminProductsScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Administrador de productos (CRUD)</Text>
+      <Text style={styles.title}>Añadir Productos</Text>
 
       <TextInput
         value={form.name}
