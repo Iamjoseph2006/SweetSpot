@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { Image, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 
 export default function BenefitsScreen() {
@@ -6,6 +6,12 @@ export default function BenefitsScreen() {
 
   return (
     <View style={styles.container}>
+      <Image
+        source={require('../../assets/images/logo.png')}
+        style={styles.logo}
+        resizeMode="contain"
+      />
+
       <Text style={styles.title}>¿Por qué usar Sweet Spot?</Text>
 
       <Text style={styles.text}>
@@ -47,6 +53,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 24,
     backgroundColor: '#fff3f9',
+  },
+  logo: {
+    width: 130,
+    height: 130,
+    alignSelf: 'center',
+    marginBottom: 12,
   },
   title: {
     fontSize: 26,
