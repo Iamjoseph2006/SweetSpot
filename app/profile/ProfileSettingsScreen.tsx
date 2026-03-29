@@ -1,16 +1,6 @@
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { getProtectedProfile } from '../../services/api';
-import { useProfileSettingsViewModel } from '../viewmodels/useProfileSettingsViewModel';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 
 type ProfileUser = {
@@ -21,21 +11,21 @@ type ProfileUser = {
   correo?: string;
 };
 
-export default function ProfileSettingsScreen() {
-  const {
-    locationState,
-    locationMessage,
-    fileState,
-    fileMessage,
-    savedFilePath,
-    updateLocation,
-    savePreference,
-    loadPreference,
-  } = useProfileSettingsViewModel();
+function getInitials(name: string) {
+  const parts = name.trim().split(' ').filter(Boolean);
 
-  const [address, setAddress] = useState('Av. Dulce 123, Ciudad SweetSpot');
-  const [paymentMethod, setPaymentMethod] = useState('Tarjeta terminada en 1234');
-  const [preference, setPreference] = useState('Sin lactosa y poco azúcar');
+  if (parts.length === 0) {
+    return 'SS';
+  }
+
+  if (parts.length === 1) {
+    return parts[0].slice(0, 2).toUpperCase();
+  }
+
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
+
+export default function ProfileSettingsScreen() {
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -64,71 +54,37 @@ export default function ProfileSettingsScreen() {
   const displayName = user?.name || user?.full_name || 'Sin nombre';
   const displayEmail = user?.email || user?.correo || 'Sin correo';
   const isAdmin = user?.role_id === 1;
+  const initials = getInitials(displayName);
 
   return (
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Perfil / Configuración</Text>
+        <Text style={styles.title}>Perfil</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Datos de tu perfil</Text>
-        {loadingProfile ? (
-          <ActivityIndicator color="#704f46" />
-        ) : (
-          <>
-            <Text style={styles.profileLabel}>Nombre</Text>
-            <Text style={styles.profileValue}>{displayName}</Text>
-            <Text style={styles.profileLabel}>Correo</Text>
-            <Text style={styles.profileValue}>{displayEmail}</Text>
-            <Text style={styles.profileLabel}>Rol</Text>
-            <Text style={styles.profileValue}>{roleLabel}</Text>
-          </>
-        )}
-      </View>
+        <View style={styles.card}>
+          {loadingProfile ? (
+            <ActivityIndicator color="#704f46" />
+          ) : (
+            <View style={styles.profileContent}>
+              <View style={styles.avatar}>
+                <Text style={styles.avatarText}>{initials}</Text>
+              </View>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Datos principales</Text>
-        <TextInput value={address} onChangeText={setAddress} style={styles.input} />
-        <TextInput value={paymentMethod} onChangeText={setPaymentMethod} style={styles.input} />
-      </View>
+              <Text style={styles.welcome}>¡Bienvenido a tu perfil!</Text>
 
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Funcionalidad nativa #1 · Geolocalización</Text>
-        <Text style={styles.status}>Estado: {locationState}</Text>
-        <Text style={styles.info}>{locationMessage}</Text>
+              <Text style={styles.profileLabel}>Nombre</Text>
+              <Text style={styles.profileValue}>{displayName}</Text>
 
-        <TouchableOpacity style={styles.primaryButton} onPress={updateLocation}>
-          <Text style={styles.buttonText}>Actualizar ubicación de entrega</Text>
-        </TouchableOpacity>
+              <Text style={styles.profileLabel}>Correo</Text>
+              <Text style={styles.profileValue}>{displayEmail}</Text>
 
-        {locationState === 'loading' && <ActivityIndicator color="#704f46" />}
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Funcionalidad nativa #2 · Sistema de archivos</Text>
-        <TextInput
-          value={preference}
-          onChangeText={setPreference}
-          style={[styles.input, styles.multiline]}
-          multiline
-          placeholder="Preferencias de pedido"
-        />
-
-        <TouchableOpacity style={styles.primaryButton} onPress={() => savePreference(preference)}>
-          <Text style={styles.buttonText}>Guardar preferencia en almacenamiento local</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.secondaryButton} onPress={loadPreference}>
-          <Text style={styles.buttonText}>Cargar preferencia guardada</Text>
-        </TouchableOpacity>
-
-        {fileState === 'loading' && <ActivityIndicator color="#704f46" />}
-
-        <Text style={styles.status}>Estado: {fileState}</Text>
-        <Text style={styles.info}>Ruta local: {savedFilePath || 'Aún no guardada'}</Text>
-        <Text style={styles.info}>Contenido: {fileMessage}</Text>
-      </View>
+              <Text style={styles.profileLabel}>Rol</Text>
+              <Text style={styles.profileValue}>{roleLabel}</Text>
+            </View>
+          )}
+        </View>
       </ScrollView>
+
       <AppFooterNav isAdmin={isAdmin} />
     </View>
   );
@@ -141,72 +97,62 @@ const styles = StyleSheet.create({
   },
   container: {
     flexGrow: 1,
+    justifyContent: 'center',
     padding: 20,
     paddingBottom: FOOTER_SPACE + 20,
-    gap: 14,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 28,
+    fontWeight: '800',
     color: '#704f46',
     textAlign: 'center',
+    marginBottom: 16,
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 14,
-    gap: 10,
+    borderRadius: 18,
+    padding: 22,
     borderWidth: 1,
     borderColor: '#f2d7e4',
+    shadowColor: '#704f46',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 3,
   },
-  cardTitle: {
+  profileContent: {
+    alignItems: 'flex-start',
+  },
+  avatar: {
+    width: 84,
+    height: 84,
+    borderRadius: 42,
+    backgroundColor: '#704f46',
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginBottom: 10,
+  },
+  avatarText: {
+    color: '#fff',
+    fontSize: 28,
+    fontWeight: '800',
+  },
+  welcome: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#704f46',
+    color: '#4f3a34',
+    alignSelf: 'center',
+    marginBottom: 8,
   },
   profileLabel: {
     fontSize: 13,
     color: '#9a7f76',
-    marginTop: 4,
+    marginTop: 8,
   },
   profileValue: {
     fontSize: 16,
     color: '#4f3a34',
     fontWeight: '600',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    padding: 10,
-    backgroundColor: '#fff',
-  },
-  multiline: {
-    minHeight: 70,
-    textAlignVertical: 'top',
-  },
-  primaryButton: {
-    backgroundColor: '#704f46',
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  secondaryButton: {
-    backgroundColor: '#38b6ff',
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  status: {
-    color: '#704f46',
-    fontWeight: '700',
-  },
-  info: {
-    color: '#5b4a45',
   },
 });
