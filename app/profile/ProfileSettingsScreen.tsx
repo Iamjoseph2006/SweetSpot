@@ -1,7 +1,9 @@
+import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { getProtectedProfile } from '../../services/api';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
+import { getProtectedProfile } from '../../services/api';
+import { removeToken } from '../../services/authStorage';
 
 type ProfileUser = {
   role_id: number;
@@ -26,6 +28,7 @@ function getInitials(name: string) {
 }
 
 export default function ProfileSettingsScreen() {
+  const router = useRouter();
   const [user, setUser] = useState<ProfileUser | null>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
 
@@ -36,6 +39,9 @@ export default function ProfileSettingsScreen() {
 
         if (data.error) {
           Alert.alert('Perfil', data.error);
+          await removeToken();
+          router.dismissAll();
+          router.replace('/auth/LoginScreen');
           return;
         }
 
@@ -48,7 +54,13 @@ export default function ProfileSettingsScreen() {
     };
 
     loadProfile();
-  }, []);
+  }, [router]);
+
+  const handleLogout = async () => {
+    await removeToken();
+    router.dismissAll();
+    router.replace('/auth/LoginScreen');
+  };
 
   const roleLabel = user?.role_id === 1 ? 'Administrador' : 'Cliente';
   const displayName = user?.name || user?.full_name || 'Sin nombre';
@@ -80,6 +92,10 @@ export default function ProfileSettingsScreen() {
 
               <Text style={styles.profileLabel}>Rol</Text>
               <Text style={styles.profileValue}>{roleLabel}</Text>
+
+              <TouchableOpacity style={styles.btnLogout} onPress={handleLogout} testID="profile-logout-button">
+                <Text style={styles.btnText}>Cerrar sesión</Text>
+              </TouchableOpacity>
             </View>
           )}
         </View>
@@ -122,6 +138,7 @@ const styles = StyleSheet.create({
   },
   profileContent: {
     alignItems: 'flex-start',
+    width: '100%',
   },
   avatar: {
     width: 84,
@@ -154,5 +171,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#4f3a34',
     fontWeight: '600',
+  },
+  btnLogout: {
+    width: '100%',
+    marginTop: 18,
+    backgroundColor: '#38b6ff',
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  btnText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 });
