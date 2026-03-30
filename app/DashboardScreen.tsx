@@ -120,7 +120,7 @@ export default function DashboardScreen() {
     <View style={styles.screen}>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.heroCard}>
-          <Text style={styles.badge}>SweetSpot</Text>
+          <Text style={styles.badge}>Sweet Spot</Text>
           <Text style={styles.title} testID="dashboard-title">
             Hola, {displayName}
           </Text>
