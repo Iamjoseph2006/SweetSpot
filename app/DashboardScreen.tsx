@@ -77,7 +77,7 @@ export default function DashboardScreen() {
             {
               label: 'Mi perfil',
               icon: 'person-outline',
-              description: 'Actualiza tus datos y sesión.',
+              description: 'Revisa la información.',
               route: '/profile/ProfileSettingsScreen',
             },
           ]
@@ -103,7 +103,7 @@ export default function DashboardScreen() {
             {
               label: 'Mi perfil',
               icon: 'person-outline',
-              description: 'Gestiona cuenta y seguridad.',
+              description: 'Revisa la información de tu cuenta.',
               route: '/profile/ProfileSettingsScreen',
             },
           ],
@@ -137,10 +137,6 @@ export default function DashboardScreen() {
                 <Ionicons name="shield-checkmark-outline" size={18} color="#704f46" />
                 <Text style={styles.profileValue}>{roleLabel}</Text>
               </View>
-
-              <Text style={styles.profileNotice}>
-                Revisa tu perfil: por ahora todavía no se pueden actualizar los datos.
-              </Text>
             </View>
 
             <View style={styles.actionsCard}>
