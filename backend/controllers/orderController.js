@@ -24,18 +24,27 @@ const createOrder = async (req, res) => {
 
   try {
     const userId = req.user.role_id === 1 ? req.body.user_id : req.user.id;
+    const deliveryPayload = req.body.delivery && typeof req.body.delivery === 'object'
+      ? req.body.delivery
+      : {};
+
     const rawDeliveryLocation =
       typeof req.body.delivery_location === 'string'
         ? req.body.delivery_location
         : typeof req.body.deliveryLocation === 'string'
           ? req.body.deliveryLocation
-          : '';
+          : typeof deliveryPayload.location === 'string'
+            ? deliveryPayload.location
+            : '';
+
     const rawDeliveryPreference =
       typeof req.body.delivery_preference === 'string'
         ? req.body.delivery_preference
         : typeof req.body.deliveryPreference === 'string'
           ? req.body.deliveryPreference
-          : '';
+          : typeof deliveryPayload.preference === 'string'
+            ? deliveryPayload.preference
+            : '';
 
     const deliveryLocation = rawDeliveryLocation.trim();
     const deliveryPreference = rawDeliveryPreference.trim();
@@ -43,6 +52,16 @@ const createOrder = async (req, res) => {
     if (!userId) {
       connection.release();
       return res.status(400).json({ error: 'user_id es obligatorio' });
+    }
+
+    if (!deliveryLocation) {
+      connection.release();
+      return res.status(400).json({ error: 'delivery_location es obligatorio' });
+    }
+
+    if (!deliveryPreference) {
+      connection.release();
+      return res.status(400).json({ error: 'delivery_preference es obligatorio' });
     }
 
     await connection.beginTransaction();
@@ -87,6 +106,8 @@ const createOrder = async (req, res) => {
       message: 'Pedido creado correctamente',
       order_id: orderId,
       total,
+      delivery_location: deliveryLocation,
+      delivery_preference: deliveryPreference,
     });
   } catch (error) {
     await connection.rollback();

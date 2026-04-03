@@ -282,6 +282,9 @@ export async function deleteCartItem(id: number) {
 export async function createOrder(user_id: number, delivery?: { delivery_location?: string; delivery_preference?: string }) {
   const token = await getToken();
 
+  const cleanedLocation = (delivery?.delivery_location ?? '').trim();
+  const cleanedPreference = (delivery?.delivery_preference ?? '').trim();
+
   const response = await fetch(`${BASE_URL}/orders`, {
     method: 'POST',
     headers: {
@@ -290,8 +293,14 @@ export async function createOrder(user_id: number, delivery?: { delivery_locatio
     },
     body: JSON.stringify({
       user_id,
-      delivery_location: delivery?.delivery_location ?? '',
-      delivery_preference: delivery?.delivery_preference ?? '',
+      delivery: {
+        location: cleanedLocation,
+        preference: cleanedPreference,
+      },
+      delivery_location: cleanedLocation,
+      delivery_preference: cleanedPreference,
+      deliveryLocation: cleanedLocation,
+      deliveryPreference: cleanedPreference,
     }),
   });
 
