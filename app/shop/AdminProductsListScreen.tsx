@@ -1,9 +1,12 @@
 import { Image } from 'expo-image';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { activateProduct, deleteProduct, getProducts, inactivateProduct, Product, updateProduct } from '../../services/api';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
+import { AppButton } from '../../components/ui/app-button';
+import { AppListItem } from '../../components/ui/app-list-item';
+import { AppTextInput } from '../../components/ui/app-text-input';
 
 const EMPTY_FORM = { name: '', description: '', price: '', image: '' };
 
@@ -88,12 +91,12 @@ export default function AdminProductsListScreen() {
       {editingId ? (
         <View style={styles.editCard}>
           <Text style={styles.editTitle}>Editando #{editingId}</Text>
-          <TextInput value={form.name} onChangeText={(v) => setForm((p) => ({ ...p, name: v }))} style={styles.input} placeholder="Nombre" />
-          <TextInput value={form.description} onChangeText={(v) => setForm((p) => ({ ...p, description: v }))} style={styles.input} placeholder="Descripción" />
-          <TextInput value={form.price} onChangeText={(v) => setForm((p) => ({ ...p, price: v }))} style={styles.input} placeholder="Precio" keyboardType="decimal-pad" />
-          <TextInput value={form.image} onChangeText={(v) => setForm((p) => ({ ...p, image: v }))} style={styles.input} placeholder="URL imagen" />
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}><Text style={styles.buttonText}>Guardar cambios</Text></TouchableOpacity>
-          <TouchableOpacity style={styles.cancelButton} onPress={clearForm}><Text style={styles.buttonText}>Cancelar</Text></TouchableOpacity>
+          <AppTextInput value={form.name} onChangeText={(v) => setForm((p) => ({ ...p, name: v }))} placeholder="Nombre" />
+          <AppTextInput value={form.description} onChangeText={(v) => setForm((p) => ({ ...p, description: v }))} placeholder="Descripción" />
+          <AppTextInput value={form.price} onChangeText={(v) => setForm((p) => ({ ...p, price: v }))} placeholder="Precio" keyboardType="decimal-pad" />
+          <AppTextInput value={form.image} onChangeText={(v) => setForm((p) => ({ ...p, image: v }))} placeholder="URL imagen" />
+          <AppButton style={styles.saveButton} onPress={handleSave} label="Guardar cambios" />
+          <AppButton style={styles.cancelButton} onPress={clearForm} label="Cancelar" variant="neutral" />
         </View>
       ) : null}
 
@@ -102,17 +105,21 @@ export default function AdminProductsListScreen() {
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
-          <View style={[styles.card, item.active === false && styles.inactiveCard]}>
+          <AppListItem inactive={item.active === false}>
             {item.image ? <Image source={{ uri: item.image }} style={styles.productImage} contentFit="contain" /> : null}
             <Text style={styles.name}>{item.name}</Text>
             <Text style={styles.details}>${item.price}</Text>
             <Text style={styles.details}>Estado: {item.active === false ? 'Inactivo' : 'Activo'}</Text>
             <View style={styles.row}>
-              <TouchableOpacity style={styles.editButton} onPress={() => handleEdit(item)}><Text style={styles.buttonText}>Editar</Text></TouchableOpacity>
-              <TouchableOpacity style={styles.inactiveButton} onPress={() => toggleActive(item)}><Text style={styles.buttonText}>{item.active === false ? 'Activar' : 'Inactivar'}</Text></TouchableOpacity>
+              <AppButton style={styles.editButton} onPress={() => handleEdit(item)} label="Editar" variant="secondary" />
+              <AppButton
+                style={styles.inactiveButton}
+                onPress={() => toggleActive(item)}
+                label={item.active === false ? 'Activar' : 'Inactivar'}
+              />
             </View>
-            <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id)}><Text style={styles.buttonText}>Eliminar</Text></TouchableOpacity>
-          </View>
+            <AppButton style={styles.deleteButton} onPress={() => handleDelete(item.id)} label="Eliminar" variant="danger" />
+          </AppListItem>
         )}
       />
 
@@ -125,19 +132,15 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48, paddingBottom: FOOTER_SPACE },
   title: { fontSize: 21, fontWeight: 'bold', color: '#704f46', marginBottom: 12, textAlign: 'center' },
   list: { paddingBottom: 12 },
-  card: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 10 },
-  inactiveCard: { opacity: 0.75 },
   editCard: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 12 },
   editTitle: { color: '#704f46', fontWeight: '700', marginBottom: 8 },
-  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 10, backgroundColor: '#fff', padding: 10, marginBottom: 8 },
   productImage: { width: '100%', height: 120, borderRadius: 8, marginBottom: 8, backgroundColor: '#f8f2f6' },
   name: { fontSize: 17, fontWeight: '600', color: '#704f46' },
   details: { color: '#704f46', marginBottom: 6 },
   row: { flexDirection: 'row', gap: 8, marginBottom: 8 },
-  saveButton: { backgroundColor: '#704f46', padding: 10, borderRadius: 8, alignItems: 'center' },
-  cancelButton: { backgroundColor: '#8c6a5d', padding: 10, borderRadius: 8, alignItems: 'center', marginTop: 8 },
-  editButton: { flex: 1, backgroundColor: '#38b6ff', padding: 10, borderRadius: 8, alignItems: 'center' },
-  inactiveButton: { flex: 1, backgroundColor: '#704f46', padding: 10, borderRadius: 8, alignItems: 'center' },
-  deleteButton: { backgroundColor: '#d9534f', padding: 10, borderRadius: 8, alignItems: 'center' },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
+  saveButton: { borderRadius: 8, paddingVertical: 10 },
+  cancelButton: { borderRadius: 8, paddingVertical: 10, marginTop: 8 },
+  editButton: { flex: 1, borderRadius: 8, paddingVertical: 10 },
+  inactiveButton: { flex: 1, borderRadius: 8, paddingVertical: 10 },
+  deleteButton: { borderRadius: 8, paddingVertical: 10 },
 });

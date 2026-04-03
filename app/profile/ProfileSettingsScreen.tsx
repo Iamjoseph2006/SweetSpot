@@ -1,9 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 import { getProtectedProfile } from '../../services/api';
 import { removeToken } from '../../services/authStorage';
+import { AppButton } from '../../components/ui/app-button';
 
 type ProfileUser = {
   role_id: number;
@@ -93,9 +94,13 @@ export default function ProfileSettingsScreen() {
               <Text style={styles.profileLabel}>Rol</Text>
               <Text style={styles.profileValue}>{roleLabel}</Text>
 
-              <TouchableOpacity style={styles.btnLogout} onPress={handleLogout} testID="profile-logout-button">
-                <Text style={styles.btnText}>Cerrar sesión</Text>
-              </TouchableOpacity>
+              <AppButton
+                style={styles.btnLogout}
+                variant="secondary"
+                onPress={handleLogout}
+                testID="profile-logout-button"
+                label="Cerrar sesión"
+              />
             </View>
           )}
         </View>
@@ -175,14 +180,6 @@ const styles = StyleSheet.create({
   btnLogout: {
     width: '100%',
     marginTop: 18,
-    backgroundColor: '#38b6ff',
-    paddingVertical: 14,
     borderRadius: 12,
-    alignItems: 'center',
-  },
-  btnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '700',
   },
 });

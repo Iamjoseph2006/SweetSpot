@@ -1,8 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { createProduct } from '../../services/api';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
+import { AppButton } from '../../components/ui/app-button';
+import { AppTextInput } from '../../components/ui/app-text-input';
 
 const EMPTY_FORM = {
   name: '',
@@ -52,39 +54,36 @@ export default function AdminProductsScreen() {
     <View style={styles.container}>
       <Text style={styles.title}>Añadir producto</Text>
 
-      <TextInput
+      <AppTextInput
         value={form.name}
         onChangeText={(value) => setForm((prev) => ({ ...prev, name: value }))}
         placeholder="Nombre del producto"
-        style={styles.input}
       />
-      <TextInput
+      <AppTextInput
         value={form.description}
         onChangeText={(value) => setForm((prev) => ({ ...prev, description: value }))}
         placeholder="Descripción"
-        style={styles.input}
       />
-      <TextInput
+      <AppTextInput
         value={form.price}
         onChangeText={(value) => setForm((prev) => ({ ...prev, price: value }))}
         placeholder="Precio"
         keyboardType="decimal-pad"
-        style={styles.input}
       />
-      <TextInput
+      <AppTextInput
         value={form.image}
         onChangeText={(value) => setForm((prev) => ({ ...prev, image: value }))}
         placeholder="URL de imagen (opcional)"
-        style={styles.input}
       />
 
-      <TouchableOpacity style={styles.saveButton} onPress={handleSubmit}>
-        <Text style={styles.buttonText}>Crear producto</Text>
-      </TouchableOpacity>
+      <AppButton label="Crear producto" style={styles.saveButton} onPress={handleSubmit} />
 
-      <TouchableOpacity style={styles.manageButton} onPress={() => router.push('/shop/AdminProductsListScreen')}>
-        <Text style={styles.buttonText}>Ver productos</Text>
-      </TouchableOpacity>
+      <AppButton
+        label="Ver productos"
+        variant="secondary"
+        style={styles.manageButton}
+        onPress={() => router.push('/shop/AdminProductsListScreen')}
+      />
 
       <AppFooterNav isAdmin />
     </View>
@@ -100,21 +99,9 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     textAlign: 'center',
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    backgroundColor: '#fff',
-    padding: 10,
-    marginBottom: 8,
-  },
-  saveButton: { backgroundColor: '#704f46', padding: 12, borderRadius: 10, alignItems: 'center' },
+  saveButton: { marginTop: 8, borderRadius: 10 },
   manageButton: {
-    backgroundColor: '#38b6ff',
-    padding: 12,
     borderRadius: 10,
-    alignItems: 'center',
     marginTop: 8,
   },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
 });
