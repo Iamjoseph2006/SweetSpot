@@ -1,11 +1,18 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { removeToken } from '../../services/authStorage';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from 'react-native';
 import { getOrders, getProtectedProfile, Order, updateOrderStatus } from '../../services/api';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
+import { AppButton } from '../../components/ui/app-button';
 
-const ADMIN_STATUSES = ['created', 'preparing', 'sent', 'delivered'];
+const STATUS_LABELS: Record<string, string> = {
+  created: 'Creado',
+  preparing: 'En preparación',
+  sent: 'Enviado',
+  delivered: 'Entregado',
+};
+const ORDER_STATUS_FLOW = ['created', 'preparing', 'sent', 'delivered'] as const;
 
 export default function OrdersScreen() {
   const router = useRouter();
@@ -46,22 +53,33 @@ export default function OrdersScreen() {
     }, [loadOrders])
   );
 
-  const handleAdvanceStatus = async (order: Order) => {
-    const currentIndex = ADMIN_STATUSES.indexOf(order.status);
+  const handleChangeStatus = (order: Order) => {
+    const options = ORDER_STATUS_FLOW.filter((status) => status !== order.status);
 
-    if (currentIndex < 0 || currentIndex === ADMIN_STATUSES.length - 1) {
+    if (!options.length) {
+      Alert.alert('Sin cambios', 'El pedido ya está en su estado final.');
       return;
     }
 
-    const nextStatus = ADMIN_STATUSES[currentIndex + 1];
-    const response = await updateOrderStatus(order.id, nextStatus);
-
-    if (response.error) {
-      Alert.alert('Error', response.error);
-      return;
-    }
-
-    loadOrders();
+    Alert.alert(
+      `Cambiar estado #${order.id}`,
+      `Estado actual: ${STATUS_LABELS[order.status] ?? order.status}`,
+      [
+        ...options.map((status) => ({
+          text: STATUS_LABELS[status],
+          onPress: async () => {
+            const response = await updateOrderStatus(order.id, status);
+            if (response.error) {
+              Alert.alert('Error', response.error);
+              return;
+            }
+            Alert.alert('Listo', `Estado actualizado a: ${STATUS_LABELS[status]}`);
+            loadOrders();
+          },
+        })),
+        { text: 'Cancelar', style: 'cancel' as const },
+      ]
+    );
   };
 
   return (
@@ -80,7 +98,7 @@ export default function OrdersScreen() {
         renderItem={({ item }) => (
           <View style={styles.card}>
             <Text style={styles.id}>{isAdmin ? `Pedido #${item.id} · Usuario #${item.user_id}` : `Pedido #${item.id}`}</Text>
-            <Text style={styles.text}>Estado: {item.status}</Text>
+            <Text style={styles.text}>Estado: {STATUS_LABELS[item.status] ?? item.status}</Text>
             <Text style={styles.text}>Total: ${Number(item.total).toFixed(2)}</Text>
             <Text style={styles.text}>
               Fecha: {new Date(item.created_at).toLocaleString('es-CO', { hour12: false })}
@@ -90,9 +108,12 @@ export default function OrdersScreen() {
               <>
                 <Text style={styles.text}>Cliente: {item.name || `Usuario #${item.user_id}`}</Text>
                 <Text style={styles.text}>Correo: {item.email || 'Sin correo'}</Text>
-                <TouchableOpacity style={styles.statusButton} onPress={() => handleAdvanceStatus(item)}>
-                  <Text style={styles.buttonText}>Avanzar estado</Text>
-                </TouchableOpacity>
+                <AppButton
+                  style={styles.changeStatusButton}
+                  variant="secondary"
+                  label="Cambiar estado"
+                  onPress={() => handleChangeStatus(item)}
+                />
               </>
             ) : null}
           </View>
@@ -122,14 +143,7 @@ const styles = StyleSheet.create({
   },
   id: { fontWeight: '700', color: '#704f46', fontSize: 16, marginBottom: 4 },
   text: { color: '#704f46', marginBottom: 3 },
+  changeStatusButton: { marginTop: 8, borderRadius: 8, paddingVertical: 10 },
   empty: { textAlign: 'center', color: '#704f46', marginTop: 24 },
   loaderWrap: { paddingVertical: 24 },
-  statusButton: {
-    backgroundColor: '#38b6ff',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 8,
-  },
-  buttonText: { color: '#fff', fontWeight: 'bold' },
 });
