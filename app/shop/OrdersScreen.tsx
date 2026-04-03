@@ -97,7 +97,8 @@ export default function OrdersScreen() {
         ListEmptyComponent={<Text style={styles.empty}>No hay pedidos todavía.</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.id}>{isAdmin ? `Pedido #${item.id} · Usuario #${item.user_id}` : `Pedido #${item.id}`}</Text>
+            <Text style={styles.id}>Pedido #{item.id}</Text>
+            {isAdmin ? <Text style={styles.meta}>Cliente ID: {item.user_id}</Text> : null}
             <Text style={styles.text}>Estado: {STATUS_LABELS[item.status] ?? item.status}</Text>
             <Text style={styles.text}>Total: ${Number(item.total).toFixed(2)}</Text>
             <Text style={styles.text}>
@@ -146,6 +147,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   id: { fontWeight: '700', color: '#704f46', fontSize: 16, marginBottom: 4 },
+  meta: { color: '#9a7f76', marginBottom: 6, fontSize: 13 },
   text: { color: '#704f46', marginBottom: 3 },
   changeStatusButton: { marginTop: 8, borderRadius: 8, paddingVertical: 10 },
   empty: { textAlign: 'center', color: '#704f46', marginTop: 24 },
