@@ -106,11 +106,15 @@ export default function OrdersScreen() {
 
             <View style={styles.infoBlock}>
               <Text style={styles.label}>Ubicación</Text>
-              <Text style={styles.value}>{item.delivery_location || 'Sin ubicación registrada'}</Text>
+              <Text style={styles.value}>
+                {(item.delivery_location ?? '').trim() || 'Sin ubicación registrada'}
+              </Text>
             </View>
             <View style={styles.infoBlock}>
               <Text style={styles.label}>Preferencia</Text>
-              <Text style={styles.value}>{item.delivery_preference || 'Sin preferencia registrada'}</Text>
+              <Text style={styles.value}>
+                {(item.delivery_preference ?? '').trim() || 'Sin preferencia registrada'}
+              </Text>
             </View>
             <Text style={styles.dateText}>
               Fecha: {new Date(item.created_at).toLocaleString('es-CO', { hour12: false })}
