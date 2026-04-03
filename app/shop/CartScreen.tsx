@@ -92,7 +92,13 @@ export default function CartScreen() {
       const permission = await requestLocationPermission();
 
       if (permission !== 'granted') {
-        Alert.alert('Ubicación', 'Debes habilitar permisos para usar tu ubicación de entrega');
+        const permissionMessage =
+          permission === 'blocked'
+            ? 'El permiso está bloqueado. Habilítalo en la configuración del dispositivo.'
+            : permission === 'unavailable'
+              ? 'La ubicación no está disponible en este dispositivo o emulador.'
+              : 'Debes habilitar permisos para usar tu ubicación de entrega.';
+        Alert.alert('Ubicación', permissionMessage);
         return;
       }
 
@@ -135,7 +141,10 @@ export default function CartScreen() {
       return;
     }
 
-    const response = await createOrder(userId);
+    const response = await createOrder(userId, {
+      delivery_location: deliveryLocation,
+      delivery_preference: preference.trim(),
+    });
 
     if (response.error) {
       Alert.alert('Error', response.error);
@@ -174,7 +183,7 @@ export default function CartScreen() {
       />
 
       <View style={styles.nativeCard}>
-        <Text style={styles.nativeTitle}>Datos de entrega (funciones nativas)</Text>
+        <Text style={styles.nativeTitle}>Datos de entrega</Text>
         <Text style={styles.nativeInfo}>Ubicación: {deliveryLocation}</Text>
 
         <TouchableOpacity style={styles.nativeButton} onPress={handleUseCurrentLocation}>

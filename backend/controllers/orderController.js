@@ -1,10 +1,49 @@
 const db = require('../config/db');
 
+const ORDER_STATUS_MAP = {
+  created: 'created',
+  creado: 'created',
+  preparing: 'preparing',
+  'en preparación': 'preparing',
+  'en preparacion': 'preparing',
+  sent: 'sent',
+  enviado: 'sent',
+  delivered: 'delivered',
+  entregado: 'delivered',
+};
+const ALLOWED_STATUS = ['created', 'preparing', 'sent', 'delivered'];
+let orderColumnsChecked = false;
+
+const normalizeStatus = (status) => {
+  if (!status || typeof status !== 'string') return 'created';
+  const normalized = status.trim().toLowerCase();
+  return ORDER_STATUS_MAP[normalized] ?? 'created';
+};
+
+const ensureOrderColumns = async () => {
+  if (orderColumnsChecked) return;
+
+  const [deliveryLocation] = await db.query("SHOW COLUMNS FROM orders LIKE 'delivery_location'");
+  if (!deliveryLocation.length) {
+    await db.query('ALTER TABLE orders ADD COLUMN delivery_location VARCHAR(255) NULL');
+  }
+
+  const [deliveryPreference] = await db.query("SHOW COLUMNS FROM orders LIKE 'delivery_preference'");
+  if (!deliveryPreference.length) {
+    await db.query('ALTER TABLE orders ADD COLUMN delivery_preference TEXT NULL');
+  }
+
+  orderColumnsChecked = true;
+};
+
 const createOrder = async (req, res) => {
   const connection = await db.getConnection();
 
   try {
+    await ensureOrderColumns();
     const userId = req.user.role_id === 1 ? req.body.user_id : req.user.id;
+    const deliveryLocation = typeof req.body.delivery_location === 'string' ? req.body.delivery_location.trim() : '';
+    const deliveryPreference = typeof req.body.delivery_preference === 'string' ? req.body.delivery_preference.trim() : '';
 
     if (!userId) {
       connection.release();
@@ -30,8 +69,9 @@ const createOrder = async (req, res) => {
     const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     const [orderResult] = await connection.query(
-      'INSERT INTO orders (user_id, total, status, created_at) VALUES (?, ?, ?, NOW())',
-      [userId, total, 'created']
+      `INSERT INTO orders (user_id, total, status, created_at, delivery_location, delivery_preference)
+       VALUES (?, ?, ?, NOW(), ?, ?)`,
+      [userId, total, 'created', deliveryLocation || null, deliveryPreference || null]
     );
 
     const orderId = orderResult.insertId;
@@ -62,9 +102,10 @@ const createOrder = async (req, res) => {
 
 const getOrders = async (req, res) => {
   try {
+    await ensureOrderColumns();
     const isAdmin = req.user.role_id === 1;
     const [rows] = await db.query(
-      `SELECT o.id, o.user_id, o.total, o.status, o.created_at, u.*
+      `SELECT o.id, o.user_id, o.total, o.status, o.created_at, o.delivery_location, o.delivery_preference, u.*
        FROM orders o
        INNER JOIN users u ON u.id = o.user_id
        ${isAdmin ? '' : 'WHERE o.user_id = ?'}
@@ -76,8 +117,10 @@ const getOrders = async (req, res) => {
       id: row.id,
       user_id: row.user_id,
       total: row.total,
-      status: row.status,
+      status: normalizeStatus(row.status),
       created_at: row.created_at,
+      delivery_location: row.delivery_location ?? null,
+      delivery_preference: row.delivery_preference ?? null,
       name: row.name ?? row.full_name ?? row.nombre ?? null,
       email: row.email ?? row.correo ?? null,
     }));
@@ -97,7 +140,12 @@ const updateOrderStatus = async (req, res) => {
       return res.status(400).json({ error: 'status es obligatorio' });
     }
 
-    const [result] = await db.query('UPDATE orders SET status = ? WHERE id = ?', [status.trim(), id]);
+    const normalizedStatus = normalizeStatus(status);
+    if (!ALLOWED_STATUS.includes(normalizedStatus)) {
+      return res.status(400).json({ error: 'Estado de pedido inválido' });
+    }
+
+    const [result] = await db.query('UPDATE orders SET status = ? WHERE id = ?', [normalizedStatus, id]);
 
     if (result.affectedRows === 0) {
       return res.status(404).json({ error: 'Pedido no encontrado' });

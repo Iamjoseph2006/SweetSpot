@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS orders (
   total DECIMAL(10,2) NOT NULL,
   status VARCHAR(50) NOT NULL,
   created_at DATETIME NOT NULL,
+  delivery_location VARCHAR(255) NULL,
+  delivery_preference TEXT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 

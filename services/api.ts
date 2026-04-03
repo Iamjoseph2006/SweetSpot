@@ -34,6 +34,8 @@ export type Order = {
   total: number;
   status: string;
   created_at: string;
+  delivery_location?: string | null;
+  delivery_preference?: string | null;
   name?: string;
   email?: string;
 };
@@ -85,6 +87,16 @@ const normalizeProfileUser = (payload: any): ProfileUser | null => {
 };
 
 const normalizeOrders = (payload: any): Order[] => {
+  const normalizeStatus = (status: unknown): string => {
+    const value = typeof status === 'string' ? status.trim().toLowerCase() : '';
+    if (value === 'creado') return 'created';
+    if (value === 'en preparación' || value === 'en preparacion') return 'preparing';
+    if (value === 'enviado') return 'sent';
+    if (value === 'entregado') return 'delivered';
+    if (value === 'preparing' || value === 'sent' || value === 'delivered') return value;
+    return 'created';
+  };
+
   const rows = Array.isArray(payload)
     ? payload
     : Array.isArray(payload?.orders)
@@ -96,8 +108,20 @@ const normalizeOrders = (payload: any): Order[] => {
       id: Number(raw?.id),
       user_id: Number(raw?.user_id ?? raw?.userId),
       total: Number(raw?.total ?? 0),
-      status: typeof raw?.status === 'string' ? raw.status : 'created',
+      status: normalizeStatus(raw?.status),
       created_at: String(raw?.created_at ?? raw?.createdAt ?? new Date().toISOString()),
+      delivery_location:
+        typeof raw?.delivery_location === 'string'
+          ? raw.delivery_location
+          : typeof raw?.deliveryLocation === 'string'
+            ? raw.deliveryLocation
+            : null,
+      delivery_preference:
+        typeof raw?.delivery_preference === 'string'
+          ? raw.delivery_preference
+          : typeof raw?.deliveryPreference === 'string'
+            ? raw.deliveryPreference
+            : null,
       name: typeof raw?.name === 'string' ? raw.name : undefined,
       email: typeof raw?.email === 'string' ? raw.email : undefined,
     }))
@@ -217,7 +241,16 @@ export async function getProducts(): Promise<Product[]> {
   if (!response.ok) {
     throw new Error('No se pudieron cargar los productos');
   }
-  return response.json();
+  const payload = await response.json();
+  if (!Array.isArray(payload)) return [];
+  return payload.map((item: any) => ({
+    id: Number(item.id),
+    name: String(item.name ?? ''),
+    description: String(item.description ?? ''),
+    price: Number(item.price ?? 0),
+    image: String(item.image ?? ''),
+    active: item.active === true || item.active === 1 || item.active === '1',
+  }));
 }
 
 export async function addProductToCart(payload: {
@@ -250,7 +283,7 @@ export async function deleteCartItem(id: number) {
   return response.json();
 }
 
-export async function createOrder(user_id: number) {
+export async function createOrder(user_id: number, delivery?: { delivery_location?: string; delivery_preference?: string }) {
   const token = await getToken();
 
   const response = await fetch(`${BASE_URL}/orders`, {
@@ -259,7 +292,11 @@ export async function createOrder(user_id: number) {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${token}`,
     },
-    body: JSON.stringify({ user_id }),
+    body: JSON.stringify({
+      user_id,
+      delivery_location: delivery?.delivery_location ?? '',
+      delivery_preference: delivery?.delivery_preference ?? '',
+    }),
   });
 
   return response.json();
