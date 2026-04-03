@@ -39,9 +39,20 @@ export async function getCurrentLocation(): Promise<LocationResult | null> {
     return null;
   }
 
-  const current = await Location.getCurrentPositionAsync({
-    accuracy: Location.Accuracy.Balanced,
-  });
+  let current;
+  try {
+    current = await Location.getCurrentPositionAsync({
+      accuracy: Location.Accuracy.Balanced,
+    });
+  } catch {
+    if (!Location?.getLastKnownPositionAsync) {
+      return null;
+    }
+    current = await Location.getLastKnownPositionAsync();
+    if (!current?.coords) {
+      return null;
+    }
+  }
 
   return {
     latitude: current.coords.latitude,
