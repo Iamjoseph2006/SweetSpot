@@ -97,11 +97,22 @@ export default function OrdersScreen() {
         ListEmptyComponent={<Text style={styles.empty}>No hay pedidos todavía.</Text>}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text style={styles.id}>Pedido #{item.id}</Text>
+            <View style={styles.headerRow}>
+              <Text style={styles.id}>Pedido #{item.id}</Text>
+              <Text style={styles.statusBadge}>{STATUS_LABELS[item.status] ?? item.status}</Text>
+            </View>
             {isAdmin ? <Text style={styles.meta}>Cliente ID: {item.user_id}</Text> : null}
-            <Text style={styles.text}>Estado: {STATUS_LABELS[item.status] ?? item.status}</Text>
-            <Text style={styles.text}>Total: ${Number(item.total).toFixed(2)}</Text>
-            <Text style={styles.text}>
+            <Text style={styles.total}>Total: ${Number(item.total).toFixed(2)}</Text>
+
+            <View style={styles.infoBlock}>
+              <Text style={styles.label}>Ubicación</Text>
+              <Text style={styles.value}>{item.delivery_location || 'Sin ubicación registrada'}</Text>
+            </View>
+            <View style={styles.infoBlock}>
+              <Text style={styles.label}>Preferencia</Text>
+              <Text style={styles.value}>{item.delivery_preference || 'Sin preferencia registrada'}</Text>
+            </View>
+            <Text style={styles.dateText}>
               Fecha: {new Date(item.created_at).toLocaleString('es-CO', { hour12: false })}
             </Text>
 
@@ -109,13 +120,9 @@ export default function OrdersScreen() {
               <>
                 <Text style={styles.text}>Cliente: {item.name || `Usuario #${item.user_id}`}</Text>
                 <Text style={styles.text}>Correo: {item.email || 'Sin correo'}</Text>
-                <Text style={styles.text}>Ubicación: {item.delivery_location || 'Sin ubicación registrada'}</Text>
-                <Text style={styles.text}>
-                  Preferencia: {item.delivery_preference || 'Sin preferencia registrada'}
-                </Text>
                 <AppButton
                   style={styles.changeStatusButton}
-                  variant="secondary"
+                  variant="primary"
                   label="Cambiar estado"
                   onPress={() => handleChangeStatus(item)}
                 />
@@ -145,10 +152,33 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#f2d8e5',
   },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 },
   id: { fontWeight: '700', color: '#704f46', fontSize: 16, marginBottom: 4 },
+  statusBadge: {
+    backgroundColor: '#f5e6df',
+    color: '#704f46',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    fontWeight: '700',
+    fontSize: 12,
+    overflow: 'hidden',
+  },
   meta: { color: '#9a7f76', marginBottom: 6, fontSize: 13 },
   text: { color: '#704f46', marginBottom: 3 },
+  total: { color: '#4d2d24', marginBottom: 6, fontSize: 16, fontWeight: '800' },
+  infoBlock: {
+    backgroundColor: '#fff8fc',
+    borderRadius: 10,
+    padding: 8,
+    marginBottom: 6,
+  },
+  label: { color: '#9a7f76', fontSize: 12, marginBottom: 2, fontWeight: '700' },
+  value: { color: '#704f46', fontSize: 14 },
+  dateText: { color: '#704f46', marginTop: 2, marginBottom: 3 },
   changeStatusButton: { marginTop: 8, borderRadius: 8, paddingVertical: 10 },
   empty: { textAlign: 'center', color: '#704f46', marginTop: 24 },
   loaderWrap: { paddingVertical: 24 },

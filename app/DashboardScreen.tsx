@@ -53,14 +53,6 @@ export default function DashboardScreen() {
     loadProfile();
   }, [router]);
 
-  const handleLogout = async () => {
-    await removeToken();
-    if (router.canDismiss()) {
-      router.dismissAll();
-    }
-    router.replace('/auth/LoginScreen');
-  };
-
   const isAdmin = user?.role_id === 1;
   const displayName = user?.name || user?.full_name || 'Cliente SweetSpot';
   const displayEmail = user?.email || user?.correo || 'Sin correo';
@@ -145,6 +137,10 @@ export default function DashboardScreen() {
                 <Ionicons name="shield-checkmark-outline" size={18} color="#704f46" />
                 <Text style={styles.profileValue}>{roleLabel}</Text>
               </View>
+
+              <Text style={styles.profileNotice}>
+                Revisa tu perfil: por ahora todavía no se pueden actualizar los datos.
+              </Text>
             </View>
 
             <View style={styles.actionsCard}>
@@ -244,6 +240,16 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#4f3a34',
     fontWeight: '600',
+  },
+  profileNotice: {
+    marginTop: 4,
+    backgroundColor: '#fff8fc',
+    borderColor: '#f2d8e5',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    color: '#704f46',
+    fontSize: 13,
   },
   actionButton: {
     flexDirection: 'row',
