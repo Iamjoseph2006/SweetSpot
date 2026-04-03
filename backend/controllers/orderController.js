@@ -105,7 +105,19 @@ const getOrders = async (req, res) => {
     await ensureOrderColumns();
     const isAdmin = req.user.role_id === 1;
     const [rows] = await db.query(
-      `SELECT o.id, o.user_id, o.total, o.status, o.created_at, o.delivery_location, o.delivery_preference, u.*
+      `SELECT
+         o.id AS order_id,
+         o.user_id,
+         o.total,
+         o.status,
+         o.created_at,
+         o.delivery_location,
+         o.delivery_preference,
+         u.name AS user_name,
+         u.full_name AS user_full_name,
+         u.nombre AS user_nombre,
+         u.email AS user_email,
+         u.correo AS user_correo
        FROM orders o
        INNER JOIN users u ON u.id = o.user_id
        ${isAdmin ? '' : 'WHERE o.user_id = ?'}
@@ -114,15 +126,15 @@ const getOrders = async (req, res) => {
     );
 
     const normalizedRows = rows.map((row) => ({
-      id: row.id,
+      id: row.order_id,
       user_id: row.user_id,
       total: row.total,
       status: normalizeStatus(row.status),
       created_at: row.created_at,
       delivery_location: row.delivery_location ?? null,
       delivery_preference: row.delivery_preference ?? null,
-      name: row.name ?? row.full_name ?? row.nombre ?? null,
-      email: row.email ?? row.correo ?? null,
+      name: row.user_name ?? row.user_full_name ?? row.user_nombre ?? null,
+      email: row.user_email ?? row.user_correo ?? null,
     }));
 
     res.json(normalizedRows);

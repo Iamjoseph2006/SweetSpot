@@ -41,7 +41,9 @@ export default function ProfileSettingsScreen() {
         if (data.error) {
           Alert.alert('Perfil', data.error);
           await removeToken();
-          router.dismissAll();
+          if (router.canDismiss()) {
+            router.dismissAll();
+          }
           router.replace('/auth/LoginScreen');
           return;
         }
@@ -59,7 +61,9 @@ export default function ProfileSettingsScreen() {
 
   const handleLogout = async () => {
     await removeToken();
-    router.dismissAll();
+    if (router.canDismiss()) {
+      router.dismissAll();
+    }
     router.replace('/auth/LoginScreen');
   };
 
