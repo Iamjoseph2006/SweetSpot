@@ -70,7 +70,7 @@ export default function OrdersScreen() {
           onPress: async () => {
             const response = await updateOrderStatus(order.id, status);
             if (response.error) {
-              Alert.alert('Error', response.error);
+              Alert.alert('Error', `${response.error} (pedido #${order.id})`);
               return;
             }
             Alert.alert('Listo', `Estado actualizado a: ${STATUS_LABELS[status]}`);
@@ -108,6 +108,10 @@ export default function OrdersScreen() {
               <>
                 <Text style={styles.text}>Cliente: {item.name || `Usuario #${item.user_id}`}</Text>
                 <Text style={styles.text}>Correo: {item.email || 'Sin correo'}</Text>
+                <Text style={styles.text}>Ubicación: {item.delivery_location || 'Sin ubicación registrada'}</Text>
+                <Text style={styles.text}>
+                  Preferencia: {item.delivery_preference || 'Sin preferencia registrada'}
+                </Text>
                 <AppButton
                   style={styles.changeStatusButton}
                   variant="secondary"

@@ -55,7 +55,9 @@ export default function DashboardScreen() {
 
   const handleLogout = async () => {
     await removeToken();
-    router.dismissAll();
+    if (router.canDismiss()) {
+      router.dismissAll();
+    }
     router.replace('/auth/LoginScreen');
   };
 
