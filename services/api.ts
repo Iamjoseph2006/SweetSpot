@@ -36,8 +36,6 @@ export type Order = {
   created_at: string;
   delivery_location?: string | null;
   delivery_preference?: string | null;
-  name?: string;
-  email?: string;
 };
 
 
@@ -111,15 +109,13 @@ const normalizeOrders = (payload: any): Order[] => {
 
   return rows
     .map((raw: any) => ({
-      id: Number(raw?.id),
+      id: Number(raw?.id ?? raw?.order_id ?? raw?.orderId),
       user_id: Number(raw?.user_id ?? raw?.userId),
       total: Number(raw?.total ?? 0),
       status: normalizeStatus(raw?.status),
       created_at: String(raw?.created_at ?? raw?.createdAt ?? new Date().toISOString()),
       delivery_location: normalizeOptionalText(raw?.delivery_location ?? raw?.deliveryLocation),
       delivery_preference: normalizeOptionalText(raw?.delivery_preference ?? raw?.deliveryPreference),
-      name: typeof raw?.name === 'string' ? raw.name : undefined,
-      email: typeof raw?.email === 'string' ? raw.email : undefined,
     }))
     .filter((order: Order) => Number.isFinite(order.id) && Number.isFinite(order.user_id));
 };
@@ -131,8 +127,6 @@ const E2E_ORDERS: Order[] = [
     total: 18.5,
     status: 'created',
     created_at: '2026-01-01T10:00:00.000Z',
-    name: 'Cliente Demo',
-    email: E2E_EMAIL,
   },
 ];
 

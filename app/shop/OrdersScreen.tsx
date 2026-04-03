@@ -34,12 +34,11 @@ export default function OrdersScreen() {
         return;
       }
 
-      const admin = profile.user.role_id === 1;
+      const admin = Number(profile.user.role_id) === 1;
       setIsAdmin(admin);
 
       const data = await getOrders();
-      const visibleOrders = admin ? data : data.filter((order) => order.user_id === profile.user?.id);
-      setOrders(visibleOrders);
+      setOrders(data);
     } catch {
       Alert.alert('Error', 'No se pudieron cargar los pedidos');
     } finally {
@@ -122,8 +121,6 @@ export default function OrdersScreen() {
 
             {isAdmin ? (
               <>
-                <Text style={styles.text}>Cliente: {item.name || `Usuario #${item.user_id}`}</Text>
-                <Text style={styles.text}>Correo: {item.email || 'Sin correo'}</Text>
                 <AppButton
                   style={styles.changeStatusButton}
                   variant="primary"
