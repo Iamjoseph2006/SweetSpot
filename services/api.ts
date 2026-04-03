@@ -87,6 +87,12 @@ const normalizeProfileUser = (payload: any): ProfileUser | null => {
 };
 
 const normalizeOrders = (payload: any): Order[] => {
+  const normalizeOptionalText = (value: unknown): string | null => {
+    if (value === null || value === undefined) return null;
+    const normalized = String(value).trim();
+    return normalized.length ? normalized : null;
+  };
+
   const normalizeStatus = (status: unknown): string => {
     const value = typeof status === 'string' ? status.trim().toLowerCase() : '';
     if (value === 'creado') return 'created';
@@ -110,18 +116,8 @@ const normalizeOrders = (payload: any): Order[] => {
       total: Number(raw?.total ?? 0),
       status: normalizeStatus(raw?.status),
       created_at: String(raw?.created_at ?? raw?.createdAt ?? new Date().toISOString()),
-      delivery_location:
-        typeof raw?.delivery_location === 'string'
-          ? raw.delivery_location
-          : typeof raw?.deliveryLocation === 'string'
-            ? raw.deliveryLocation
-            : null,
-      delivery_preference:
-        typeof raw?.delivery_preference === 'string'
-          ? raw.delivery_preference
-          : typeof raw?.deliveryPreference === 'string'
-            ? raw.deliveryPreference
-            : null,
+      delivery_location: normalizeOptionalText(raw?.delivery_location ?? raw?.deliveryLocation),
+      delivery_preference: normalizeOptionalText(raw?.delivery_preference ?? raw?.deliveryPreference),
       name: typeof raw?.name === 'string' ? raw.name : undefined,
       email: typeof raw?.email === 'string' ? raw.email : undefined,
     }))

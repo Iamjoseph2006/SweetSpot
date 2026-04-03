@@ -55,17 +55,24 @@ export default function CartScreen() {
     }
   }, [userId]);
 
-  const loadSavedPreference = useCallback(async () => {
+  const loadSavedPreference = useCallback(async (showFeedback = true) => {
     try {
       setNativeLoading(true);
       const saved = await readNativeNote();
       if (!saved) {
-        Alert.alert('Preferencias', 'Aún no tienes una preferencia guardada');
+        if (showFeedback) {
+          Alert.alert('Preferencias', 'Aún no tienes una preferencia guardada');
+        }
         return;
       }
       setPreference(saved);
+      if (showFeedback) {
+        Alert.alert('Preferencias', 'Se cargó tu preferencia guardada');
+      }
     } catch {
-      Alert.alert('Error', 'No se pudo leer la preferencia guardada');
+      if (showFeedback) {
+        Alert.alert('Error', 'No se pudo leer la preferencia guardada');
+      }
     } finally {
       setNativeLoading(false);
     }
@@ -80,6 +87,10 @@ export default function CartScreen() {
   useEffect(() => {
     loadCart();
   }, [loadCart]);
+
+  useEffect(() => {
+    loadSavedPreference(false);
+  }, [loadSavedPreference]);
 
   const handleDelete = async (id: number) => {
     await deleteCartItem(id);
@@ -144,6 +155,16 @@ export default function CartScreen() {
     const cleanedLocation = deliveryLocation.trim();
     const cleanedPreference = preference.trim();
 
+    if (!cleanedLocation) {
+      Alert.alert('Ubicación requerida', 'Debes usar tu ubicación actual o escribir una ubicación manual.');
+      return;
+    }
+
+    if (!cleanedPreference) {
+      Alert.alert('Preferencia requerida', 'Debes escribir una preferencia de entrega para guardar el pedido.');
+      return;
+    }
+
     const response = await createOrder(userId, {
       delivery_location: cleanedLocation,
       delivery_preference: cleanedPreference,
@@ -193,6 +214,13 @@ export default function CartScreen() {
         <Text style={styles.nativeTitle}>Datos de entrega</Text>
         <Text style={styles.nativeInfo}>Ubicación: {locationPreview}</Text>
 
+        <TextInput
+          style={styles.input}
+          value={deliveryLocation}
+          onChangeText={setDeliveryLocation}
+          placeholder="Ej: Calle 123 #45-67, apto 201"
+        />
+
         <TouchableOpacity
           style={[styles.nativeButton, locationLoading && styles.disabledButton]}
           onPress={handleUseCurrentLocation}
@@ -215,7 +243,7 @@ export default function CartScreen() {
           <Text style={styles.buttonText}>Guardar preferencia local</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.secondaryButton} onPress={loadSavedPreference}>
+        <TouchableOpacity style={styles.secondaryButton} onPress={() => loadSavedPreference(true)}>
           <Text style={styles.buttonText}>Cargar preferencia guardada</Text>
         </TouchableOpacity>
 
