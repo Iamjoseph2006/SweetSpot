@@ -35,23 +35,31 @@ export async function requestLocationPermission(): Promise<PermissionState> {
 export async function getCurrentLocation(): Promise<LocationResult | null> {
   const Location = getExpoLocation();
 
-  if (!Location?.getCurrentPositionAsync) {
+  if (!Location?.getCurrentPositionAsync && !Location?.getLastKnownPositionAsync) {
     return null;
   }
 
-  let current;
-  try {
-    current = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.Balanced,
-    });
-  } catch {
-    if (!Location?.getLastKnownPositionAsync) {
-      return null;
+  let current = null;
+  if (Location?.getLastKnownPositionAsync) {
+    try {
+      current = await Location.getLastKnownPositionAsync();
+    } catch {
+      current = null;
     }
-    current = await Location.getLastKnownPositionAsync();
-    if (!current?.coords) {
-      return null;
+  }
+
+  if (!current?.coords && Location?.getCurrentPositionAsync) {
+    try {
+      current = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.Balanced,
+      });
+    } catch {
+      current = null;
     }
+  }
+
+  if (!current?.coords) {
+    return null;
   }
 
   return {

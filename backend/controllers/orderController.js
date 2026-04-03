@@ -147,6 +147,11 @@ const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    const orderId = Number(id);
+
+    if (!Number.isInteger(orderId) || orderId <= 0) {
+      return res.status(400).json({ error: 'id de pedido inválido' });
+    }
 
     if (!status || !status.trim()) {
       return res.status(400).json({ error: 'status es obligatorio' });
@@ -157,13 +162,30 @@ const updateOrderStatus = async (req, res) => {
       return res.status(400).json({ error: 'Estado de pedido inválido' });
     }
 
-    const [result] = await db.query('UPDATE orders SET status = ? WHERE id = ?', [normalizedStatus, id]);
-
-    if (result.affectedRows === 0) {
+    const [existingRows] = await db.query('SELECT id, status FROM orders WHERE id = ? LIMIT 1', [orderId]);
+    if (!existingRows.length) {
       return res.status(404).json({ error: 'Pedido no encontrado' });
     }
 
-    return res.json({ message: 'Estado del pedido actualizado' });
+    const currentStatus = normalizeStatus(existingRows[0].status);
+    if (currentStatus === normalizedStatus) {
+      return res.json({
+        message: 'El pedido ya tenía ese estado',
+        order: { id: orderId, status: currentStatus },
+      });
+    }
+
+    await db.query('UPDATE orders SET status = ? WHERE id = ?', [normalizedStatus, orderId]);
+
+    const [updatedRows] = await db.query('SELECT id, status FROM orders WHERE id = ? LIMIT 1', [orderId]);
+
+    return res.json({
+      message: 'Estado del pedido actualizado',
+      order: {
+        id: updatedRows[0].id,
+        status: normalizeStatus(updatedRows[0].status),
+      },
+    });
   } catch (error) {
     return res.status(500).json({ error: 'No se pudo actualizar el pedido' });
   }

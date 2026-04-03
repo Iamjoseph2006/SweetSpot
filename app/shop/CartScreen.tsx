@@ -21,9 +21,10 @@ export default function CartScreen() {
   const [userId, setUserId] = useState<number | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const [deliveryLocation, setDeliveryLocation] = useState('Ubicación no registrada');
+  const [deliveryLocation, setDeliveryLocation] = useState('');
   const [preference, setPreference] = useState('');
   const [nativeLoading, setNativeLoading] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(false);
 
   const loadProfile = useCallback(async () => {
     try {
@@ -73,8 +74,7 @@ export default function CartScreen() {
   useFocusEffect(
     useCallback(() => {
       loadProfile();
-      loadSavedPreference();
-    }, [loadProfile, loadSavedPreference])
+    }, [loadProfile])
   );
 
   useEffect(() => {
@@ -88,7 +88,7 @@ export default function CartScreen() {
 
   const handleUseCurrentLocation = async () => {
     try {
-      setNativeLoading(true);
+      setLocationLoading(true);
       const permission = await requestLocationPermission();
 
       if (permission !== 'granted') {
@@ -114,7 +114,7 @@ export default function CartScreen() {
     } catch {
       Alert.alert('Error', 'No se pudo actualizar la ubicación');
     } finally {
-      setNativeLoading(false);
+      setLocationLoading(false);
     }
   };
 
@@ -141,9 +141,12 @@ export default function CartScreen() {
       return;
     }
 
+    const cleanedLocation = deliveryLocation.trim();
+    const cleanedPreference = preference.trim();
+
     const response = await createOrder(userId, {
-      delivery_location: deliveryLocation,
-      delivery_preference: preference.trim(),
+      delivery_location: cleanedLocation,
+      delivery_preference: cleanedPreference,
     });
 
     if (response.error) {
@@ -153,13 +156,15 @@ export default function CartScreen() {
 
     Alert.alert(
       'Pedido confirmado',
-      `Entrega: ${deliveryLocation}\nPreferencia: ${preference.trim() || 'Sin preferencias'}`
+      `Entrega: ${cleanedLocation || 'Sin ubicación registrada'}\nPreferencia: ${cleanedPreference || 'Sin preferencias'}`
     );
 
     router.replace('/shop/OrderScreen');
   };
 
   const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const locationPreview = deliveryLocation.trim() || 'Sin ubicación registrada';
 
   return (
     <View style={styles.container}>
@@ -171,9 +176,11 @@ export default function CartScreen() {
         ListEmptyComponent={<Text style={styles.empty}>No hay productos en el carrito.</Text>}
         renderItem={({ item }) => (
           <View style={styles.row}>
-            <View>
+            <View style={styles.itemInfo}>
               <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.details}>Cant: {item.quantity} - ${item.price}</Text>
+              <Text style={styles.details}>Cantidad: {item.quantity}</Text>
+              <Text style={styles.details}>Precio unitario: ${Number(item.price).toFixed(2)}</Text>
+              <Text style={styles.subtotal}>Subtotal: ${(item.quantity * item.price).toFixed(2)}</Text>
             </View>
             <TouchableOpacity style={styles.deleteButton} onPress={() => handleDelete(item.id)}>
               <Text style={styles.buttonText}>Eliminar</Text>
@@ -184,10 +191,16 @@ export default function CartScreen() {
 
       <View style={styles.nativeCard}>
         <Text style={styles.nativeTitle}>Datos de entrega</Text>
-        <Text style={styles.nativeInfo}>Ubicación: {deliveryLocation}</Text>
+        <Text style={styles.nativeInfo}>Ubicación: {locationPreview}</Text>
 
-        <TouchableOpacity style={styles.nativeButton} onPress={handleUseCurrentLocation}>
-          <Text style={styles.buttonText}>Usar mi ubicación actual</Text>
+        <TouchableOpacity
+          style={[styles.nativeButton, locationLoading && styles.disabledButton]}
+          onPress={handleUseCurrentLocation}
+          disabled={locationLoading}
+        >
+          <Text style={styles.buttonText}>
+            {locationLoading ? 'Obteniendo ubicación...' : 'Usar mi ubicación actual'}
+          </Text>
         </TouchableOpacity>
 
         <TextInput
@@ -206,7 +219,7 @@ export default function CartScreen() {
           <Text style={styles.buttonText}>Cargar preferencia guardada</Text>
         </TouchableOpacity>
 
-        {nativeLoading ? <ActivityIndicator color="#704f46" /> : null}
+        {nativeLoading || locationLoading ? <ActivityIndicator color="#704f46" /> : null}
       </View>
 
       <Text style={styles.total}>Total: ${total.toFixed(2)}</Text>
@@ -238,8 +251,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  itemInfo: { flex: 1, gap: 2 },
   name: { fontSize: 16, fontWeight: '600', color: '#704f46' },
   details: { color: '#704f46' },
+  subtotal: { color: '#4d2d24', fontWeight: '700', marginTop: 2 },
   empty: { textAlign: 'center', color: '#704f46', marginTop: 24 },
   nativeCard: {
     backgroundColor: '#fff',
@@ -253,6 +268,7 @@ const styles = StyleSheet.create({
   nativeTitle: { fontWeight: '700', color: '#704f46' },
   nativeInfo: { color: '#704f46' },
   nativeButton: { backgroundColor: '#704f46', padding: 11, borderRadius: 10, alignItems: 'center' },
+  disabledButton: { opacity: 0.75 },
   input: {
     borderWidth: 1,
     borderColor: '#ccc',
