@@ -2,7 +2,7 @@ import { Image } from 'expo-image';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
-import { activateProduct, deleteProduct, getProducts, inactivateProduct, Product, updateProduct } from '../../services/api';
+import { activateProduct, getProducts, inactivateProduct, Product, updateProduct } from '../../services/api';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 import { AppButton } from '../../components/ui/app-button';
 import { AppListItem } from '../../components/ui/app-list-item';
@@ -72,15 +72,7 @@ export default function AdminProductsListScreen() {
       Alert.alert('Error', response.error);
       return;
     }
-    loadProducts();
-  };
-
-  const handleDelete = async (id: number) => {
-    const response = await deleteProduct(id);
-    if (response.error) {
-      Alert.alert('Error', response.error);
-      return;
-    }
+    Alert.alert('Listo', product.active === false ? 'Producto activado' : 'Producto inactivado');
     loadProducts();
   };
 
@@ -96,7 +88,7 @@ export default function AdminProductsListScreen() {
           <AppTextInput value={form.price} onChangeText={(v) => setForm((p) => ({ ...p, price: v }))} placeholder="Precio" keyboardType="decimal-pad" />
           <AppTextInput value={form.image} onChangeText={(v) => setForm((p) => ({ ...p, image: v }))} placeholder="URL imagen" />
           <AppButton style={styles.saveButton} onPress={handleSave} label="Guardar cambios" />
-          <AppButton style={styles.cancelButton} onPress={clearForm} label="Cancelar" variant="neutral" />
+          <AppButton style={styles.cancelButton} onPress={clearForm} label="Cancelar" variant="secondary" />
         </View>
       ) : null}
 
@@ -118,7 +110,6 @@ export default function AdminProductsListScreen() {
                 label={item.active === false ? 'Activar' : 'Inactivar'}
               />
             </View>
-            <AppButton style={styles.deleteButton} onPress={() => handleDelete(item.id)} label="Eliminar" variant="danger" />
           </AppListItem>
         )}
       />
@@ -142,5 +133,4 @@ const styles = StyleSheet.create({
   cancelButton: { borderRadius: 8, paddingVertical: 10, marginTop: 8 },
   editButton: { flex: 1, borderRadius: 8, paddingVertical: 10 },
   inactiveButton: { flex: 1, borderRadius: 8, paddingVertical: 10 },
-  deleteButton: { borderRadius: 8, paddingVertical: 10 },
 });
