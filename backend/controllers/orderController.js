@@ -12,7 +12,6 @@ const ORDER_STATUS_MAP = {
   entregado: 'delivered',
 };
 const ALLOWED_STATUS = ['created', 'preparing', 'sent', 'delivered'];
-let orderColumnsChecked = false;
 
 const normalizeStatus = (status) => {
   if (!status || typeof status !== 'string') return 'created';
@@ -20,30 +19,26 @@ const normalizeStatus = (status) => {
   return ORDER_STATUS_MAP[normalized] ?? 'created';
 };
 
-const ensureOrderColumns = async () => {
-  if (orderColumnsChecked) return;
-
-  const [deliveryLocation] = await db.query("SHOW COLUMNS FROM orders LIKE 'delivery_location'");
-  if (!deliveryLocation.length) {
-    await db.query('ALTER TABLE orders ADD COLUMN delivery_location VARCHAR(255) NULL');
-  }
-
-  const [deliveryPreference] = await db.query("SHOW COLUMNS FROM orders LIKE 'delivery_preference'");
-  if (!deliveryPreference.length) {
-    await db.query('ALTER TABLE orders ADD COLUMN delivery_preference TEXT NULL');
-  }
-
-  orderColumnsChecked = true;
-};
-
 const createOrder = async (req, res) => {
   const connection = await db.getConnection();
 
   try {
-    await ensureOrderColumns();
     const userId = req.user.role_id === 1 ? req.body.user_id : req.user.id;
-    const deliveryLocation = typeof req.body.delivery_location === 'string' ? req.body.delivery_location.trim() : '';
-    const deliveryPreference = typeof req.body.delivery_preference === 'string' ? req.body.delivery_preference.trim() : '';
+    const rawDeliveryLocation =
+      typeof req.body.delivery_location === 'string'
+        ? req.body.delivery_location
+        : typeof req.body.deliveryLocation === 'string'
+          ? req.body.deliveryLocation
+          : '';
+    const rawDeliveryPreference =
+      typeof req.body.delivery_preference === 'string'
+        ? req.body.delivery_preference
+        : typeof req.body.deliveryPreference === 'string'
+          ? req.body.deliveryPreference
+          : '';
+
+    const deliveryLocation = rawDeliveryLocation.trim();
+    const deliveryPreference = rawDeliveryPreference.trim();
 
     if (!userId) {
       connection.release();
@@ -102,7 +97,6 @@ const createOrder = async (req, res) => {
 
 const getOrders = async (req, res) => {
   try {
-    await ensureOrderColumns();
     const isAdmin = req.user.role_id === 1;
     const [rows] = await db.query(
       `SELECT
