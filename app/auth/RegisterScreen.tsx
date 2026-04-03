@@ -7,12 +7,12 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
 } from 'react-native';
 import { z } from 'zod';
 import { checkEmailExists, registerUser } from '../../services/api';
 import { buildRegisterPayload, mapInternalError, normalizeEmail } from '../../services/authLogic';
+import { AppButton } from '../../components/ui/app-button';
+import { AppTextInput } from '../../components/ui/app-text-input';
 
 /* ESQUEMA DE VALIDACIÓN (ZOD) */
 const registerSchema = z
@@ -132,56 +132,54 @@ export default function RegisterScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Registro de Usuario</Text>
 
-        <TextInput
+        <AppTextInput
           placeholder="Nombre"
-          style={styles.input}
           value={name}
           onChangeText={setName}
+          hasError={Boolean(errors.name)}
         />
         {errors.name && <Text style={styles.errorText}>⚠️ {errors.name}</Text>}
 
-        <TextInput
+        <AppTextInput
           placeholder="Correo electrónico"
-          style={styles.input}
           value={email}
           onChangeText={handleEmailChange}
           keyboardType="email-address"
           autoCapitalize="none"
+          hasError={Boolean(errors.email)}
         />
         {errors.email && <Text style={styles.errorText}>⚠️ {errors.email}</Text>}
 
-        <TextInput
+        <AppTextInput
           placeholder="Contraseña"
           secureTextEntry
-          style={styles.input}
           value={password}
           onChangeText={setPassword}
+          hasError={Boolean(errors.password)}
         />
         {errors.password && (
           <Text style={styles.errorText}>⚠️ {errors.password}</Text>
         )}
 
-        <TextInput
+        <AppTextInput
           placeholder="Confirmar contraseña"
           secureTextEntry
-          style={styles.input}
           value={confirmPassword}
           onChangeText={setConfirmPassword}
+          hasError={Boolean(errors.confirmPassword)}
         />
         {errors.confirmPassword && (
           <Text style={styles.errorText}>⚠️ {errors.confirmPassword}</Text>
         )}
 
-        <TouchableOpacity style={styles.btnPrimary} onPress={register}>
-          <Text style={styles.btnText}>Registrarse</Text>
-        </TouchableOpacity>
+        <AppButton label="Registrarse" style={styles.btnPrimary} onPress={register} />
 
-        <TouchableOpacity
+        <AppButton
+          label="Ya tengo cuenta"
+          variant="secondary"
           style={styles.btnSecondary}
           onPress={() => router.push('/auth/LoginScreen')}
-        >
-          <Text style={styles.btnText}>Ya tengo cuenta</Text>
-        </TouchableOpacity>
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -202,14 +200,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 32,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginVertical: 6,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-  },
   errorText: {
     color: '#b00020',
     marginBottom: 8,
@@ -217,22 +207,9 @@ const styles = StyleSheet.create({
     fontSize: 13,
   },
   btnPrimary: {
-    backgroundColor: '#704f46',
-    paddingVertical: 14,
-    borderRadius: 12,
     marginTop: 16,
-    alignItems: 'center',
   },
   btnSecondary: {
-    backgroundColor: '#38b6ff',
-    paddingVertical: 14,
-    borderRadius: 12,
     marginTop: 12,
-    alignItems: 'center',
-  },
-  btnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });

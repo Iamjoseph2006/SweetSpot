@@ -6,13 +6,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
-  TouchableOpacity,
 } from 'react-native';
 import { z } from 'zod';
 import { loginUser } from '../../services/api';
 import { mapInternalError } from '../../services/authLogic';
 import { getToken, saveToken } from '../../services/authStorage';
+import { AppButton } from '../../components/ui/app-button';
+import { AppTextInput } from '../../components/ui/app-text-input';
 
 const loginSchema = z.object({
   email: z.string().email('Ingrese un correo electrónico válido'),
@@ -98,10 +98,10 @@ export default function LoginScreen() {
           Iniciar Sesión
         </Text>
 
-        <TextInput
+        <AppTextInput
           testID="login-email-input"
           placeholder="Correo electrónico"
-          style={[styles.input, errors.email && styles.inputError]}
+          hasError={Boolean(errors.email)}
           value={email}
           onChangeText={setEmail}
           keyboardType="email-address"
@@ -109,11 +109,11 @@ export default function LoginScreen() {
         />
         {errors.email && <Text style={styles.errorText}>⚠️ {errors.email}</Text>}
 
-        <TextInput
+        <AppTextInput
           testID="login-password-input"
           placeholder="Contraseña"
           secureTextEntry
-          style={[styles.input, errors.password && styles.inputError]}
+          hasError={Boolean(errors.password)}
           value={password}
           onChangeText={setPassword}
         />
@@ -121,17 +121,15 @@ export default function LoginScreen() {
 
         {errors.general && <Text style={styles.errorTextCenter}>⚠️ {errors.general}</Text>}
 
-        <TouchableOpacity style={styles.btnPrimary} onPress={login} testID="login-submit-button">
-          <Text style={styles.btnText}>Entrar</Text>
-        </TouchableOpacity>
+        <AppButton label="Entrar" style={styles.btnPrimary} onPress={login} testID="login-submit-button" />
 
-        <TouchableOpacity
+        <AppButton
+          label="Registrarse"
+          variant="secondary"
           style={styles.btnSecondary}
           onPress={() => router.push('/auth/RegisterScreen')}
           testID="login-register-button"
-        >
-          <Text style={styles.btnText}>Registrarse</Text>
-        </TouchableOpacity>
+        />
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -151,17 +149,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 32,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginVertical: 6,
-    padding: 14,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-  },
-  inputError: {
-    borderColor: '#d9534f',
-  },
   errorText: {
     color: '#d9534f',
     fontSize: 14,
@@ -174,22 +161,9 @@ const styles = StyleSheet.create({
     marginVertical: 8,
   },
   btnPrimary: {
-    backgroundColor: '#704f46',
-    paddingVertical: 14,
-    borderRadius: 12,
     marginTop: 16,
-    alignItems: 'center',
   },
   btnSecondary: {
-    backgroundColor: '#38b6ff',
-    paddingVertical: 14,
-    borderRadius: 12,
     marginTop: 12,
-    alignItems: 'center',
-  },
-  btnText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
   },
 });
