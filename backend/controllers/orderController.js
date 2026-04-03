@@ -23,7 +23,8 @@ const createOrder = async (req, res) => {
   const connection = await db.getConnection();
 
   try {
-    const userId = req.user.role_id === 1 ? req.body.user_id : req.user.id;
+    const isAdmin = Number(req.user.role_id) === 1;
+    const userId = isAdmin ? req.body.user_id : req.user.id;
     const deliveryPayload = req.body.delivery && typeof req.body.delivery === 'object'
       ? req.body.delivery
       : {};
@@ -118,38 +119,30 @@ const createOrder = async (req, res) => {
 
 const getOrders = async (req, res) => {
   try {
-    const isAdmin = req.user.role_id === 1;
+    const isAdmin = Number(req.user.role_id) === 1;
     const [rows] = await db.query(
       `SELECT
-         o.id AS order_id,
-         o.user_id,
-         o.total,
-         o.status,
-         o.created_at,
-         o.delivery_location,
-         o.delivery_preference,
-         u.name AS user_name,
-         u.full_name AS user_full_name,
-         u.nombre AS user_nombre,
-         u.email AS user_email,
-         u.correo AS user_correo
-       FROM orders o
-       INNER JOIN users u ON u.id = o.user_id
-       ${isAdmin ? '' : 'WHERE o.user_id = ?'}
-       ORDER BY o.created_at DESC`,
+         id,
+         user_id,
+         total,
+         status,
+         created_at,
+         delivery_location,
+         delivery_preference
+       FROM orders
+       ${isAdmin ? '' : 'WHERE user_id = ?'}
+       ORDER BY created_at DESC`,
       isAdmin ? [] : [req.user.id]
     );
 
     const normalizedRows = rows.map((row) => ({
-      id: row.order_id,
+      id: row.id,
       user_id: row.user_id,
       total: row.total,
       status: normalizeStatus(row.status),
       created_at: row.created_at,
       delivery_location: row.delivery_location ?? null,
       delivery_preference: row.delivery_preference ?? null,
-      name: row.user_name ?? row.user_full_name ?? row.user_nombre ?? null,
-      email: row.user_email ?? row.user_correo ?? null,
     }));
 
     res.json(normalizedRows);
