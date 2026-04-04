@@ -86,13 +86,7 @@ Workflow en `.github/workflows/ci.yml`:
 ## 🌱 Git workflow recomendado
 - Branches:
   - `feature/<descripcion-corta>`
-  - `fix/<descripcion-corta>`
+  - `fix/correct token handling in order status update and add session validation`
 - Commits convencionales:
   - `feat:` `fix:` `refactor:` `test:` `docs:` `ci:`
 - PR template incluido en `.github/pull_request_template.md`.
-
-## 📸 Screenshots
-- `docs/screenshots/login-placeholder.png`
-- `docs/screenshots/catalog-placeholder.png`
-
-> Reemplazar placeholders por capturas reales antes de entrega final.
