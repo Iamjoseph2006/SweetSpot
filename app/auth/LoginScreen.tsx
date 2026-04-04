@@ -7,22 +7,16 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
-import { z } from 'zod';
-import { loginUser } from '../../services/api';
-import { mapInternalError } from '../../services/authLogic';
-import { getToken, saveToken } from '../../services/authStorage';
+import { getToken } from '../../services/authStorage';
 import { AppButton } from '../../components/ui/app-button';
 import { AppTextInput } from '../../components/ui/app-text-input';
-
-const loginSchema = z.object({
-  email: z.string().email('Ingrese un correo electrónico válido'),
-  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-});
+import { loginWithCredentials } from '../../viewmodels/loginViewModel';
 
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<{
     email?: string;
     password?: string;
@@ -42,50 +36,21 @@ export default function LoginScreen() {
 
   const login = async () => {
     setErrors({});
+    setIsSubmitting(true);
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
-    const validation = loginSchema.safeParse({
-      email: cleanEmail,
-      password: cleanPassword,
+    const result = await loginWithCredentials({
+      email: email.trim(),
+      password: password.trim(),
     });
 
-    if (!validation.success) {
-      const fieldErrors: Record<string, string> = {};
+    setIsSubmitting(false);
 
-      validation.error.issues.forEach((issue) => {
-        const field = issue.path[0] as string;
-        fieldErrors[field] = issue.message;
-      });
-
-      setErrors(fieldErrors);
+    if (result.success) {
+      router.replace('/DashboardScreen');
       return;
     }
 
-    try {
-      const cleanEmail = email.trim().toLowerCase();
-      const cleanPassword = password.trim();
-      const response = await loginUser({
-        email: cleanEmail,
-        password: cleanPassword,
-      });
-
-      if (response.token) {
-        await saveToken(response.token);
-        router.replace('/DashboardScreen');
-      } else {
-        setErrors({
-          general: response.error || 'Correo o contraseña incorrectos',
-        });
-      }
-    } catch (error) {
-      setErrors({
-        general: mapInternalError(
-          error,
-          'No se pudo conectar al servidor. Verifica tu conexión o la IP.'
-        ),
-      });
-    }
+    setErrors(result.errors || { general: 'No se pudo iniciar sesión' });
   };
 
   return (
@@ -121,7 +86,13 @@ export default function LoginScreen() {
 
         {errors.general && <Text style={styles.errorTextCenter}>⚠️ {errors.general}</Text>}
 
-        <AppButton label="Entrar" style={styles.btnPrimary} onPress={login} testID="login-submit-button" />
+        <AppButton
+          label={isSubmitting ? 'Ingresando...' : 'Entrar'}
+          style={styles.btnPrimary}
+          onPress={login}
+          disabled={isSubmitting}
+          testID="login-submit-button"
+        />
 
         <AppButton
           label="Registrarse"

@@ -1,48 +1,27 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
-import { createProduct } from '../../services/api';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 import { AppButton } from '../../components/ui/app-button';
 import { AppTextInput } from '../../components/ui/app-text-input';
-
-const EMPTY_FORM = {
-  name: '',
-  description: '',
-  price: '',
-  image: '',
-};
+import { initialProductDraft, createProductFromDraft } from '../../viewmodels/adminProductsViewModel';
 
 export default function AdminProductsScreen() {
   const router = useRouter();
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(initialProductDraft());
+  const [isSaving, setIsSaving] = useState(false);
 
   const clearForm = () => {
-    setForm(EMPTY_FORM);
+    setForm(initialProductDraft());
   };
 
   const handleSubmit = async () => {
-    if (!form.name.trim() || !form.price.trim()) {
-      Alert.alert('Campos requeridos', 'Nombre y precio son obligatorios');
-      return;
-    }
+    setIsSaving(true);
+    const result = await createProductFromDraft(form);
+    setIsSaving(false);
 
-    const payload = {
-      name: form.name.trim(),
-      description: form.description.trim(),
-      price: Number(form.price),
-      image: form.image.trim(),
-    };
-
-    if (Number.isNaN(payload.price)) {
-      Alert.alert('Dato inválido', 'El precio debe ser numérico');
-      return;
-    }
-
-    const response = await createProduct(payload);
-
-    if (response.error) {
-      Alert.alert('Error', response.error);
+    if (result.error) {
+      Alert.alert('Error', result.error);
       return;
     }
 
@@ -76,7 +55,12 @@ export default function AdminProductsScreen() {
         placeholder="URL de imagen (opcional)"
       />
 
-      <AppButton label="Crear producto" style={styles.saveButton} onPress={handleSubmit} />
+      <AppButton
+        label={isSaving ? 'Creando...' : 'Crear producto'}
+        style={styles.saveButton}
+        onPress={handleSubmit}
+        disabled={isSaving}
+      />
 
       <AppButton
         label="Ver productos"

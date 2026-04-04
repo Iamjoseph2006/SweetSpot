@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { isJwtExpired } from '../domain/auth';
 
 const TOKEN_KEY = 'sweetspot_access_token';
 let memoryToken = '';
@@ -30,6 +31,18 @@ const getSecureStore = () => {
   }
 };
 
+async function clearStoredToken() {
+  const SecureStore = getSecureStore();
+  if (SecureStore?.deleteItemAsync) {
+    await SecureStore.deleteItemAsync(TOKEN_KEY, SECURE_STORE_OPTIONS);
+  }
+
+  memoryToken = '';
+  if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
+    localStorage.removeItem(TOKEN_KEY);
+  }
+}
+
 export async function saveToken(token: string) {
   const encoded = encode(token);
   const SecureStore = getSecureStore();
@@ -47,30 +60,25 @@ export async function saveToken(token: string) {
 
 export async function getToken() {
   const SecureStore = getSecureStore();
+  let token = '';
 
   if (SecureStore?.getItemAsync) {
     const value = await SecureStore.getItemAsync(TOKEN_KEY, SECURE_STORE_OPTIONS);
-    return decode(value ?? '');
+    token = decode(value ?? '');
+  } else if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
+    token = decode(localStorage.getItem(TOKEN_KEY) ?? '');
+  } else {
+    token = decode(memoryToken);
   }
 
-  if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
-    const value = localStorage.getItem(TOKEN_KEY) ?? '';
-    return decode(value);
+  if (token && isJwtExpired(token)) {
+    await clearStoredToken();
+    return '';
   }
 
-  return decode(memoryToken);
+  return token;
 }
 
 export async function removeToken() {
-  const SecureStore = getSecureStore();
-
-  if (SecureStore?.deleteItemAsync) {
-    await SecureStore.deleteItemAsync(TOKEN_KEY, SECURE_STORE_OPTIONS);
-    return;
-  }
-
-  memoryToken = '';
-  if (Platform.OS === 'web' && typeof localStorage !== 'undefined') {
-    localStorage.removeItem(TOKEN_KEY);
-  }
+  await clearStoredToken();
 }

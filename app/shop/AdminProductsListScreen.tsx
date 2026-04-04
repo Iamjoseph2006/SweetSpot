@@ -1,34 +1,44 @@
 import { Image } from 'expo-image';
-import { useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
-import { activateProduct, getProducts, inactivateProduct, Product, updateProduct } from '../../services/api';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 import { AppButton } from '../../components/ui/app-button';
 import { AppListItem } from '../../components/ui/app-list-item';
 import { AppTextInput } from '../../components/ui/app-text-input';
-
-const EMPTY_FORM = { name: '', description: '', price: '', image: '' };
+import { Product } from '../../services/api';
+import {
+  initialProductDraft,
+  loadAdminProducts,
+  removeProduct,
+  toggleProductState,
+  updateProductFromDraft,
+} from '../../viewmodels/adminProductsViewModel';
 
 export default function AdminProductsListScreen() {
   const [products, setProducts] = useState<Product[]>([]);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState(initialProductDraft());
+  const [loading, setLoading] = useState(true);
 
   const loadProducts = useCallback(async () => {
     try {
-      const data = await getProducts();
+      setLoading(true);
+      const data = await loadAdminProducts();
       setProducts(data);
     } catch {
       Alert.alert('Error', 'No se pudo cargar el catálogo');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
-  useFocusEffect(useCallback(() => { loadProducts(); }, [loadProducts]));
+  useEffect(() => {
+    loadProducts();
+  }, [loadProducts]);
 
   const clearForm = () => {
     setEditingId(null);
-    setForm(EMPTY_FORM);
+    setForm(initialProductDraft());
   };
 
   const handleEdit = (product: Product) => {
@@ -43,21 +53,9 @@ export default function AdminProductsListScreen() {
 
   const handleSave = async () => {
     if (!editingId) return;
-    const payload = {
-      name: form.name.trim(),
-      description: form.description.trim(),
-      price: Number(form.price),
-      image: form.image.trim(),
-    };
-
-    if (!payload.name || Number.isNaN(payload.price)) {
-      Alert.alert('Dato inválido', 'Completa nombre y precio válidos');
-      return;
-    }
-
-    const response = await updateProduct(editingId, payload);
-    if (response.error) {
-      Alert.alert('Error', response.error);
+    const result = await updateProductFromDraft(editingId, form);
+    if (result.error) {
+      Alert.alert('Error', result.error);
       return;
     }
 
@@ -66,12 +64,24 @@ export default function AdminProductsListScreen() {
     loadProducts();
   };
 
-  const toggleActive = async (product: Product) => {
-    const response = product.active === false ? await activateProduct(product.id) : await inactivateProduct(product.id);
-    if (response.error) {
-      Alert.alert('Error', response.error);
+  const handleDelete = async (productId: number) => {
+    const result = await removeProduct(productId);
+    if (result.error) {
+      Alert.alert('Error', result.error);
       return;
     }
+
+    Alert.alert('Listo', 'Producto eliminado');
+    loadProducts();
+  };
+
+  const handleToggleActive = async (product: Product) => {
+    const result = await toggleProductState(product);
+    if (result.error) {
+      Alert.alert('Error', result.error);
+      return;
+    }
+
     Alert.alert('Listo', product.active === false ? 'Producto activado' : 'Producto inactivado');
     loadProducts();
   };
@@ -79,6 +89,7 @@ export default function AdminProductsListScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Ver productos</Text>
+      {loading ? <Text style={styles.subtitle}>Cargando catálogo...</Text> : null}
 
       {editingId ? (
         <View style={styles.editCard}>
@@ -106,10 +117,11 @@ export default function AdminProductsListScreen() {
               <AppButton style={styles.editButton} onPress={() => handleEdit(item)} label="Editar" variant="secondary" />
               <AppButton
                 style={styles.inactiveButton}
-                onPress={() => toggleActive(item)}
+                onPress={() => handleToggleActive(item)}
                 label={item.active === false ? 'Activar' : 'Inactivar'}
               />
             </View>
+            <AppButton style={styles.deleteButton} onPress={() => handleDelete(item.id)} label="Eliminar" variant="danger" />
           </AppListItem>
         )}
       />
@@ -121,7 +133,8 @@ export default function AdminProductsListScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#fff3f9', padding: 16, paddingTop: 48, paddingBottom: FOOTER_SPACE },
-  title: { fontSize: 21, fontWeight: 'bold', color: '#704f46', marginBottom: 12, textAlign: 'center' },
+  title: { fontSize: 21, fontWeight: 'bold', color: '#704f46', marginBottom: 6, textAlign: 'center' },
+  subtitle: { textAlign: 'center', color: '#704f46', marginBottom: 12 },
   list: { paddingBottom: 12 },
   editCard: { backgroundColor: '#fff', borderRadius: 12, padding: 12, marginBottom: 12 },
   editTitle: { color: '#704f46', fontWeight: '700', marginBottom: 8 },
@@ -133,4 +146,5 @@ const styles = StyleSheet.create({
   cancelButton: { borderRadius: 8, paddingVertical: 10, marginTop: 8 },
   editButton: { flex: 1, borderRadius: 8, paddingVertical: 10 },
   inactiveButton: { flex: 1, borderRadius: 8, paddingVertical: 10 },
+  deleteButton: { borderRadius: 8, paddingVertical: 10 },
 });
