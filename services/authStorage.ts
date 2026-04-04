@@ -61,6 +61,40 @@ export async function getToken() {
   return decode(memoryToken);
 }
 
+const parseJwtPayload = (token: string): { exp?: number } | null => {
+  try {
+    const [, payloadPart] = token.split('.');
+    if (!payloadPart) return null;
+
+    const normalized = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
+    const decoded =
+      typeof atob === 'function'
+        ? atob(padded)
+        : Buffer.from(padded, 'base64').toString('utf-8');
+
+    return JSON.parse(decoded);
+  } catch {
+    return null;
+  }
+};
+
+export async function getValidToken() {
+  const token = await getToken();
+  if (!token) return '';
+
+  const payload = parseJwtPayload(token);
+  if (!payload?.exp) return token;
+
+  const nowInSeconds = Math.floor(Date.now() / 1000);
+  if (payload.exp <= nowInSeconds) {
+    await removeToken();
+    return '';
+  }
+
+  return token;
+}
+
 export async function removeToken() {
   const SecureStore = getSecureStore();
 
