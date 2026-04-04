@@ -1,4 +1,4 @@
-# SweetSpot Mobile + API
+# Sweet Spot Mobile + API
 
 Proyecto académico/profesional preparado para evaluación final de desarrollo móvil.
 Desarrollado con **React Native (Expo)**, **Node.js/Express**, **MySQL**, aplicando **arquitectura limpia**, **MVVM** y buenas prácticas de ingeniería de software.
