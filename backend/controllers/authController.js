@@ -19,6 +19,20 @@ const login = async (req, res) => {
   }
 };
 
+const checkEmail = async (req, res) => {
+  try {
+    const email = String(req.query.email || '').trim().toLowerCase();
+    if (!email) {
+      return res.status(400).json({ error: 'email es obligatorio' });
+    }
+
+    const user = await User.findByEmail(email);
+    return res.json({ exists: Boolean(user) });
+  } catch {
+    return res.status(500).json({ error: 'No se pudo validar el correo' });
+  }
+};
+
 const profile = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
@@ -38,9 +52,9 @@ const profile = async (req, res) => {
         correo: user.correo || user.email,
       },
     });
-  } catch (error) {
+  } catch {
     return res.status(500).json({ error: 'No se pudo cargar el perfil' });
   }
 };
 
-module.exports = { register, login, profile };
+module.exports = { register, login, profile, checkEmail };

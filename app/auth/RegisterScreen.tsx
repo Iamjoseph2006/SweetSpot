@@ -8,55 +8,28 @@ import {
   StyleSheet,
   Text,
 } from 'react-native';
-import { z } from 'zod';
 import { checkEmailExists, registerUser } from '../../services/api';
 import { buildRegisterPayload, mapInternalError, normalizeEmail } from '../../services/authLogic';
+import { registerSchema } from '../../validation/registerSchema';
 import { AppButton } from '../../components/ui/app-button';
 import { AppTextInput } from '../../components/ui/app-text-input';
 
-/* ESQUEMA DE VALIDACIÓN (ZOD) */
-const registerSchema = z
-  .object({
-    name: z
-      .string()
-      .min(3, 'El nombre debe tener al menos 3 caracteres'),
-
-    email: z
-      .string()
-      .email('Ingrese un correo electrónico válido'),
-
-    password: z
-      .string()
-      .min(6, 'La contraseña debe tener mínimo 6 caracteres'),
-
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Las contraseñas no coinciden',
-    path: ['confirmPassword'],
-  });
-
 export default function RegisterScreen() {
   const router = useRouter();
-
-  /* ESTADOS */
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  /* DEBOUNCE EMAIL (useRef) */
-  const emailTimeout = useRef<any>(null);
+  const emailTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
     setErrors((prev) => {
-  const newErrors = { ...prev };
-  delete newErrors.email;
-  return newErrors;
-});
-
+      const newErrors = { ...prev };
+      delete newErrors.email;
+      return newErrors;
+    });
 
     if (emailTimeout.current) {
       clearTimeout(emailTimeout.current);
@@ -64,23 +37,22 @@ export default function RegisterScreen() {
 
     emailTimeout.current = setTimeout(async () => {
       const normalizedEmail = normalizeEmail(value);
-      if (normalizedEmail.includes('@')) {
-        try {
-          const exists = await checkEmailExists(normalizedEmail);
-          if (exists) {
-            setErrors((prev) => ({
-              ...prev,
-              email: 'Este correo ya está registrado',
-            }));
-          }
-        } catch {
-          // Silencioso para no romper UX
+      if (!normalizedEmail.includes('@')) return;
+
+      try {
+        const exists = await checkEmailExists(normalizedEmail);
+        if (exists) {
+          setErrors((prev) => ({
+            ...prev,
+            email: 'Este correo ya está registrado',
+          }));
         }
+      } catch {
+        // Silencioso para no romper UX.
       }
     }, 600);
   };
 
-  /* REGISTRO */
   const register = async () => {
     setErrors({});
 
@@ -117,13 +89,11 @@ export default function RegisterScreen() {
 
       Alert.alert('Registro exitoso', 'Tu cuenta ha sido creada');
       router.replace('/auth/LoginScreen');
-
     } catch (error) {
       Alert.alert('Error de conexión', mapInternalError(error, 'No se pudo conectar con el servidor'));
     }
   };
 
-  /* UI */
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -132,12 +102,7 @@ export default function RegisterScreen() {
       <ScrollView contentContainerStyle={styles.container}>
         <Text style={styles.title}>Registro de Usuario</Text>
 
-        <AppTextInput
-          placeholder="Nombre"
-          value={name}
-          onChangeText={setName}
-          hasError={Boolean(errors.name)}
-        />
+        <AppTextInput placeholder="Nombre" value={name} onChangeText={setName} hasError={Boolean(errors.name)} />
         {errors.name && <Text style={styles.errorText}>⚠️ {errors.name}</Text>}
 
         <AppTextInput
@@ -157,9 +122,7 @@ export default function RegisterScreen() {
           onChangeText={setPassword}
           hasError={Boolean(errors.password)}
         />
-        {errors.password && (
-          <Text style={styles.errorText}>⚠️ {errors.password}</Text>
-        )}
+        {errors.password && <Text style={styles.errorText}>⚠️ {errors.password}</Text>}
 
         <AppTextInput
           placeholder="Confirmar contraseña"
@@ -168,9 +131,7 @@ export default function RegisterScreen() {
           onChangeText={setConfirmPassword}
           hasError={Boolean(errors.confirmPassword)}
         />
-        {errors.confirmPassword && (
-          <Text style={styles.errorText}>⚠️ {errors.confirmPassword}</Text>
-        )}
+        {errors.confirmPassword && <Text style={styles.errorText}>⚠️ {errors.confirmPassword}</Text>}
 
         <AppButton label="Registrarse" style={styles.btnPrimary} onPress={register} />
 
@@ -185,7 +146,6 @@ export default function RegisterScreen() {
   );
 }
 
-/* ESTILOS */
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,

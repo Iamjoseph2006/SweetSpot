@@ -1,6 +1,6 @@
 import { getToken } from './authStorage';
 
-export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.18.5:3000/api';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:3000/api';
 
 const E2E_EMAIL = 'demo@email.com';
 const E2E_PASSWORD = '123456';
@@ -221,9 +221,10 @@ export async function checkEmailExists(email: string): Promise<boolean> {
     return email === E2E_EMAIL;
   }
 
-  const response = await fetch(`${BASE_URL}/auth/check-email?email=${email}`);
+  const response = await fetch(`${BASE_URL}/auth/check-email?email=${encodeURIComponent(email)}`);
+  if (!response.ok) return false;
   const data = await response.json();
-  return data.exists;
+  return Boolean(data.exists);
 }
 
 export async function getProducts(): Promise<Product[]> {
