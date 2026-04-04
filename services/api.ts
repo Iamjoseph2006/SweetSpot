@@ -295,7 +295,11 @@ export async function getOrders(): Promise<Order[]> {
 }
 
 export async function updateOrderStatus(id: number, status: string) {
-  const token = await getToken();
+  const token = await (authStorage.getValidToken?.() ?? authStorage.getToken());
+  if (!token) {
+    return { error: 'No hay sesión activa. Inicia sesión nuevamente.' };
+  }
+
   const response = await fetch(`${BASE_URL}/orders/${id}/status`, {
     method: 'PUT',
     headers: {
