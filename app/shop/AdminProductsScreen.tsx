@@ -1,10 +1,10 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
-import { createProduct } from '../../services/api';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 import { AppButton } from '../../components/ui/app-button';
 import { AppTextInput } from '../../components/ui/app-text-input';
+import { useAdminProductsViewModel } from '../../viewmodels/useAdminProductsViewModel';
 
 const EMPTY_FORM = {
   name: '',
@@ -15,6 +15,7 @@ const EMPTY_FORM = {
 
 export default function AdminProductsScreen() {
   const router = useRouter();
+  const { create, isSubmitting } = useAdminProductsViewModel();
   const [form, setForm] = useState(EMPTY_FORM);
 
   const clearForm = () => {
@@ -22,26 +23,8 @@ export default function AdminProductsScreen() {
   };
 
   const handleSubmit = async () => {
-    if (!form.name.trim() || !form.price.trim()) {
-      Alert.alert('Campos requeridos', 'Nombre y precio son obligatorios');
-      return;
-    }
-
-    const payload = {
-      name: form.name.trim(),
-      description: form.description.trim(),
-      price: Number(form.price),
-      image: form.image.trim(),
-    };
-
-    if (Number.isNaN(payload.price)) {
-      Alert.alert('Dato inválido', 'El precio debe ser numérico');
-      return;
-    }
-
-    const response = await createProduct(payload);
-
-    if (response.error) {
+    const response = await create(form);
+    if (!response.success) {
       Alert.alert('Error', response.error);
       return;
     }
@@ -76,7 +59,12 @@ export default function AdminProductsScreen() {
         placeholder="URL de imagen (opcional)"
       />
 
-      <AppButton label="Crear producto" style={styles.saveButton} onPress={handleSubmit} />
+      <AppButton
+        label={isSubmitting ? 'Guardando...' : 'Crear producto'}
+        style={styles.saveButton}
+        onPress={handleSubmit}
+        disabled={isSubmitting}
+      />
 
       <AppButton
         label="Ver productos"

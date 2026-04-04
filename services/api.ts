@@ -1,4 +1,10 @@
-import { getToken } from './authStorage';
+import * as authStorage from './authStorage';
+import { Product } from '../domain/models/product';
+import { Order } from '../domain/models/order';
+import { LoginRequest, ProfileUser, RegisterRequest } from '../domain/models/auth';
+export type { Product } from '../domain/models/product';
+export type { Order } from '../domain/models/order';
+export type { ProfileUser } from '../domain/models/auth';
 
 export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.18.5:3000/api';
 
@@ -9,15 +15,6 @@ const E2E_TOKEN = 'e2e-demo-token';
 const isE2EMode = () =>
   process.env.EXPO_PUBLIC_E2E_MODE === 'true' || process.env.NODE_ENV === 'test';
 
-export type Product = {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  active?: boolean;
-};
-
 export type CartItem = {
   id: number;
   user_id: number;
@@ -26,26 +23,6 @@ export type CartItem = {
   name: string;
   price: number;
   image: string;
-};
-
-export type Order = {
-  id: number;
-  user_id: number;
-  total: number;
-  status: string;
-  created_at: string;
-  delivery_location?: string | null;
-  delivery_preference?: string | null;
-};
-
-
-export type ProfileUser = {
-  id: number;
-  role_id: number;
-  name?: string;
-  email?: string;
-  full_name?: string;
-  correo?: string;
 };
 
 export type ProtectedProfileResponse = {
@@ -131,12 +108,7 @@ const E2E_ORDERS: Order[] = [
 ];
 
 /* REGISTRO DE USUARIO */
-export async function registerUser(data: {
-  name: string;
-  email: string;
-  password: string;
-  role_id: number;
-}) {
+export async function registerUser(data: RegisterRequest) {
   if (isE2EMode()) {
     return {
       message: 'Usuario registrado correctamente',
@@ -157,10 +129,7 @@ export async function registerUser(data: {
 }
 
 /* LOGIN DE USUARIO */
-export async function loginUser(data: {
-  email: string;
-  password: string;
-}) {
+export async function loginUser(data: LoginRequest) {
   if (isE2EMode()) {
     if (data.email === E2E_EMAIL && data.password === E2E_PASSWORD) {
       return { token: E2E_TOKEN };
@@ -180,7 +149,7 @@ export async function loginUser(data: {
 
 /* ENDPOINT PROTEGIDO */
 export async function getProtectedProfile(): Promise<ProtectedProfileResponse> {
-  const token = await getToken();
+  const token = await (authStorage.getValidToken?.() ?? authStorage.getToken());
   if (!token) {
     return { error: 'No hay sesión activa. Inicia sesión nuevamente.' };
   }
@@ -206,6 +175,9 @@ export async function getProtectedProfile(): Promise<ProtectedProfileResponse> {
   const payload = await response.json();
 
   if (!response.ok) {
+    if (response.status === 401) {
+      await authStorage.removeToken();
+    }
     return { error: payload?.error || 'No se pudo cargar el perfil' };
   }
 
@@ -274,7 +246,7 @@ export async function deleteCartItem(id: number) {
 }
 
 export async function createOrder(user_id: number, delivery?: { delivery_location?: string; delivery_preference?: string }) {
-  const token = await getToken();
+  const token = await (authStorage.getValidToken?.() ?? authStorage.getToken());
 
   const cleanedLocation = (delivery?.delivery_location ?? '').trim();
   const cleanedPreference = (delivery?.delivery_preference ?? '').trim();
@@ -306,7 +278,7 @@ export async function getOrders(): Promise<Order[]> {
     return E2E_ORDERS;
   }
 
-  const token = await getToken();
+  const token = await (authStorage.getValidToken?.() ?? authStorage.getToken());
   const response = await fetch(`${BASE_URL}/orders`, {
     headers: {
       Authorization: `Bearer ${token}`,

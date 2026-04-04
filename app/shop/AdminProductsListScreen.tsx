@@ -1,8 +1,8 @@
 import { Image } from 'expo-image';
 import { useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Alert, FlatList, StyleSheet, Text, View } from 'react-native';
-import { activateProduct, getProducts, inactivateProduct, Product, updateProduct } from '../../services/api';
+import { ActivityIndicator, Alert, FlatList, StyleSheet, Text, View } from 'react-native';
+import { activateProduct, deleteProduct, getProducts, inactivateProduct, Product, updateProduct } from '../../services/api';
 import { AppFooterNav, FOOTER_SPACE } from '../../components/app-footer-nav';
 import { AppButton } from '../../components/ui/app-button';
 import { AppListItem } from '../../components/ui/app-list-item';
@@ -12,6 +12,7 @@ const EMPTY_FORM = { name: '', description: '', price: '', image: '' };
 
 export default function AdminProductsListScreen() {
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
 
@@ -21,6 +22,8 @@ export default function AdminProductsListScreen() {
       setProducts(data);
     } catch {
       Alert.alert('Error', 'No se pudo cargar el catálogo');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -76,6 +79,16 @@ export default function AdminProductsListScreen() {
     loadProducts();
   };
 
+  const handleDelete = async (id: number) => {
+    const response = await deleteProduct(id);
+    if (response.error) {
+      Alert.alert('Error', response.error);
+      return;
+    }
+    Alert.alert('Listo', 'Producto eliminado');
+    loadProducts();
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Ver productos</Text>
@@ -92,7 +105,7 @@ export default function AdminProductsListScreen() {
         </View>
       ) : null}
 
-      <FlatList
+      {loading ? <ActivityIndicator size="large" color="#704f46" /> : <FlatList
         data={products}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={styles.list}
@@ -110,9 +123,14 @@ export default function AdminProductsListScreen() {
                 label={item.active === false ? 'Activar' : 'Inactivar'}
               />
             </View>
+            <AppButton
+              style={styles.deleteButton}
+              onPress={() => handleDelete(item.id)}
+              label="Eliminar"
+            />
           </AppListItem>
         )}
-      />
+      />}
 
       <AppFooterNav isAdmin />
     </View>
@@ -133,4 +151,5 @@ const styles = StyleSheet.create({
   cancelButton: { borderRadius: 8, paddingVertical: 10, marginTop: 8 },
   editButton: { flex: 1, borderRadius: 8, paddingVertical: 10 },
   inactiveButton: { flex: 1, borderRadius: 8, paddingVertical: 10 },
+  deleteButton: { borderRadius: 8, paddingVertical: 10, backgroundColor: '#ad4f4f' },
 });
