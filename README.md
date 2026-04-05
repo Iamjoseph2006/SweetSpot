@@ -1,47 +1,81 @@
-# SweetSpot Mobile + API
+# Sweet Spot Mobile + API
 
-Proyecto académico/profesional preparado para evaluación final de desarrollo móvil con **React Native (Expo)**, **Node.js/Express**, **MySQL**, arquitectura limpia y prácticas de ingeniería de software.
+Proyecto académico/profesional preparado para evaluación final de desarrollo móvil.
+Desarrollado con **React Native (Expo)**, **Node.js/Express**, **MySQL**, aplicando **arquitectura limpia**, **MVVM** y buenas prácticas de ingeniería de software.
 
-## ✨ Características principales
-- Autenticación JWT (registro/login/perfil protegido) con control de expiración en cliente.
-- CRUD de productos (crear, listar, editar, inactivar/activar, eliminar).
-- Carrito y creación/seguimiento de órdenes.
-- Features nativas: ubicación y filesystem (servicios/hook nativos).
-- Testing por capas: unit + integration + e2e base.
-- CI con GitHub Actions para validación automática en push/PR.
+---
 
-## 🧱 Arquitectura
-Se organiza por responsabilidades y capas:
+# ✨Características principales
 
-- `app/`: UI (pantallas Expo Router).
-- `viewmodels/`: capa MVVM (estado/acciones de presentación).
-- `services/`: acceso a API, almacenamiento seguro, integraciones nativas.
-- `domain/`: modelos/tipos de dominio independientes de UI.
-- `backend/`: API REST con Express (routes/controllers/services/models).
-- `tests/`: pruebas de frontend (unit/integration).
-- `e2e/`: pruebas end-to-end (Detox base).
+* 🔐 **Autenticación JWT** (registro, login, perfil protegido) con manejo de expiración en cliente
+* 🛍️ **CRUD completo de productos** (crear, listar, editar, activar/inactivar, eliminar)
+* 🧾 **Carrito y gestión de órdenes** (creación y seguimiento)
+* 📱 **Funcionalidades nativas**: geolocalización y filesystem
+* 🧪 **Testing por capas**: unitario, integración y base E2E
+* ⚙️ **CI/CD** con GitHub Actions en push y pull request
 
-## 🛠️ Stack tecnológico
-- **Frontend:** Expo, React Native, TypeScript, Expo Router.
-- **Backend:** Node.js, Express, MySQL, JWT.
-- **Validación:** Zod.
-- **Testing:** Jest, React Native Testing Library, Detox (estructura).
-- **CI/CD:** GitHub Actions.
+---
 
-## 🚀 Instalación y ejecución
+# 🧱 Arquitectura
 
-### 1) Frontend
+El proyecto sigue principios de **Clean Architecture** y patrón **MVVM**, separando responsabilidades:
+
+```
+app/           → UI (pantallas con Expo Router)
+viewmodels/    → lógica de presentación (estado y acciones)
+services/      → acceso a API, storage y features nativas
+domain/        → modelos y lógica de negocio independiente
+backend/       → API REST (Express + MySQL)
+tests/         → pruebas frontend
+e2e/           → pruebas end-to-end (estructura base)
+```
+
+---
+
+# 🛠️ Stack tecnológico
+
+### Frontend
+
+* Expo + React Native
+* TypeScript
+* Expo Router
+
+### Backend
+
+* Node.js
+* Express
+* MySQL
+* JWT
+
+### Otros
+
+* Validación: Zod
+* Testing: Jest, React Native Testing Library, Detox
+* CI/CD: GitHub Actions
+
+---
+
+# 🚀 Instalación y ejecución
+
+## 1️⃣ Frontend
+
 ```bash
 npm ci
 cp .env.example .env
 npm run start
 ```
 
-Variables (`.env`):
-- `EXPO_PUBLIC_API_URL`: URL base del backend (`http://localhost:3000/api` por defecto sugerido).
-- `EXPO_PUBLIC_E2E_MODE`: `false` para uso normal.
+### Variables (.env)
 
-### 2) Backend
+```env
+EXPO_PUBLIC_API_URL=http://localhost:3000/api
+EXPO_PUBLIC_E2E_MODE=false
+```
+
+---
+
+## 2️⃣ Backend
+
 ```bash
 cd backend
 npm ci
@@ -49,50 +83,135 @@ cp .env.example .env
 npm run dev
 ```
 
-Variables (`backend/.env`):
-- `PORT`
-- `DB_HOST`
-- `DB_USER`
-- `DB_PASSWORD`
-- `DB_NAME`
-- `JWT_SECRET`
+### Variables (backend/.env)
 
-## ✅ Testing
-Desde la raíz:
+```env
+PORT=3000
+DB_HOST=localhost
+DB_USER=root
+DB_PASSWORD=
+DB_NAME=sweetspot
+JWT_SECRET=your_secret_key
+```
+
+---
+
+# 🧪 Testing
+
+## Frontend
+
 ```bash
 npm run test
 npm run test:unit
 npm run test:integration
 ```
 
-Backend:
+## Backend
+
 ```bash
 cd backend
 npm test
 ```
 
-E2E (estructura base):
+## E2E (estructura base)
+
 ```bash
 npm run test:e2e:build
 npm run test:e2e
 ```
 
-## 🔄 CI/CD
-Workflow en `.github/workflows/ci.yml`:
-- instala dependencias frontend/backend,
-- ejecuta pruebas,
-- falla automáticamente si algún test falla.
+---
 
-## 🌱 Git workflow recomendado
-- Branches:
-  - `feature/<descripcion-corta>`
-  - `fix/<descripcion-corta>`
-- Commits convencionales:
-  - `feat:` `fix:` `refactor:` `test:` `docs:` `ci:`
-- PR template incluido en `.github/pull_request_template.md`.
+# ⚙️ CI/CD
 
-## 📸 Screenshots
-- `docs/screenshots/login-placeholder.png`
-- `docs/screenshots/catalog-placeholder.png`
+El pipeline definido en:
 
-> Reemplazar placeholders por capturas reales antes de entrega final.
+```
+.github/workflows/ci.yml
+```
+
+Realiza automáticamente:
+
+* instalación de dependencias
+* ejecución de pruebas frontend y backend
+* validación en cada **push** y **pull request**
+
+✔ Si algún test falla → el pipeline falla automáticamente
+
+---
+
+# 📸 Evidencia visual
+
+Capturas disponibles en:
+
+```
+docs/screenshots/
+```
+
+> ⚠️ Importante: Estas capturas deben mostrar login, CRUD completo y funcionalidades nativas.
+
+---
+
+# 🌱 Flujo de trabajo con Git
+
+## 📌 Estrategia de ramas
+
+```
+fix/*        → corrección de errores
+refactor/*   → mejoras de arquitectura o código
+chore/*      → configuración, CI/CD, documentación
+test/*       → pruebas
+```
+
+> `feature/*` se utiliza solo cuando se agregan nuevas funcionalidades relevantes.
+
+---
+
+## 📝 Commits convencionales
+
+```
+feat: nueva funcionalidad
+fix: corrección de error
+refactor: mejora interna sin cambiar funcionalidad
+test: agregar o modificar tests
+docs: documentación
+ci: cambios en pipeline
+```
+
+---
+
+## 🔀 Pull Requests
+
+Se utiliza template en:
+
+```
+.github/pull_request_template.md
+```
+
+Incluye:
+
+* descripción del cambio
+* checklist de calidad
+* tipo de cambio
+
+---
+
+# 🎯 Objetivo del proyecto
+
+Este proyecto demuestra:
+
+* Aplicación de arquitectura limpia en mobile
+* Integración completa frontend + backend
+* Uso de autenticación segura
+* Consumo de APIs REST
+* Automatización con CI/CD
+* Buenas prácticas de desarrollo profesional
+
+---
+
+# 🏁 Estado
+
+✅ Proyecto listo para evaluación final
+🚀 Nivel: producción académica / junior profesional
+
+---
